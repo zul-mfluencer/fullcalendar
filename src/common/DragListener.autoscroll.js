@@ -70,18 +70,18 @@ DragListener.mixin({
 
 			// translate vertical closeness into velocity.
 			// mouse must be completely in bounds for velocity to happen.
-			if (topCloseness >= 0 && topCloseness <= 1) {
+			if (topCloseness >= 0) {
 				topVel = topCloseness * this.scrollSpeed * -1; // negative. for scrolling up
 			}
-			else if (bottomCloseness >= 0 && bottomCloseness <= 1) {
+			else if (bottomCloseness >= 0) {
 				topVel = bottomCloseness * this.scrollSpeed;
 			}
 
 			// translate horizontal closeness into velocity
-			if (leftCloseness >= 0 && leftCloseness <= 1) {
+			if (leftCloseness >= 0) {
 				leftVel = leftCloseness * this.scrollSpeed * -1; // negative. for scrolling left
 			}
-			else if (rightCloseness >= 0 && rightCloseness <= 1) {
+			else if (rightCloseness >= 0) {
 				leftVel = rightCloseness * this.scrollSpeed;
 			}
 		}
