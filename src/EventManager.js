@@ -992,7 +992,7 @@ function EventManager() { // assumed to be a calendar
 			end: event._end ? event._end.clone() : t.getDefaultEventEnd(event._allDay, event._start),
 			allDay: newProps.allDay // normalize the dates in the same regard as the new properties
 		};
-		normalizeEventDates(oldProps);
+		normalizeEventTimes(oldProps);
 
 		// need to clear the end date if explicitly changed to null
 		clearEnd = event._end !== null && newProps.end === null;

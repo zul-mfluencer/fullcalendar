@@ -819,6 +819,11 @@ Grid.mixin({
 			allDay: event.allDay
 		};
 
+		if (calendar.getIsAmbigTimezone()) {
+			resizeLocation.start.stripZone();
+			resizeLocation.end.stripZone();
+		}
+
 		// if an all-day event was in a timed area and was resized to a time, adjust start/end to have times
 		if (resizeLocation.allDay && durationHasTime(delta)) {
 			resizeLocation.allDay = false;
