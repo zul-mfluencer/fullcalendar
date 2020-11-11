@@ -33,7 +33,6 @@ export interface SlicedProps<SegType extends Seg> {
 }
 
 export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> {
-
   private sliceBusinessHours = memoize(this._sliceBusinessHours)
   private sliceDateSelection = memoize(this._sliceDateSpan)
   private sliceEventStore = memoize(this._sliceEventStore)
@@ -60,7 +59,7 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
       bgEventSegs: eventSegs.bg,
       eventDrag: this.sliceEventDrag(props.eventDrag, eventUiBases, dateProfile, nextDayThreshold, ...extraArgs),
       eventResize: this.sliceEventResize(props.eventResize, eventUiBases, dateProfile, nextDayThreshold, ...extraArgs),
-      eventSelection: props.eventSelection
+      eventSelection: props.eventSelection,
     } // TODO: give interactionSegs?
   }
 
@@ -73,7 +72,7 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
       { range: { start: date, end: addMs(date, 1) }, allDay: false }, // add 1 ms, protect against null range
       {},
       context,
-      ...extraArgs
+      ...extraArgs,
     )
   }
 
@@ -92,12 +91,12 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
       expandRecurring(
         businessHours,
         computeActiveRange(dateProfile, Boolean(nextDayThreshold)),
-        context
+        context,
       ),
       {},
       dateProfile,
       nextDayThreshold,
-      ...extraArgs
+      ...extraArgs,
     ).bg
   }
 
@@ -113,17 +112,15 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
         eventStore,
         eventUiBases,
         computeActiveRange(dateProfile, Boolean(nextDayThreshold)),
-        nextDayThreshold
+        nextDayThreshold,
       )
 
       return {
         bg: this.sliceEventRanges(rangeRes.bg, extraArgs),
-        fg: this.sliceEventRanges(rangeRes.fg, extraArgs)
+        fg: this.sliceEventRanges(rangeRes.fg, extraArgs),
       }
-
-    } else {
-      return { bg: [], fg: [] }
     }
+    return { bg: [], fg: [] }
   }
 
   private _sliceInteraction(
@@ -141,13 +138,13 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
       interaction.mutatedEvents,
       eventUiBases,
       computeActiveRange(dateProfile, Boolean(nextDayThreshold)),
-      nextDayThreshold
+      nextDayThreshold,
     )
 
     return {
       segs: this.sliceEventRanges(rangeRes.fg, extraArgs),
       affectedInstances: interaction.affectedEvents.instances,
-      isEvent: interaction.isEvent
+      isEvent: interaction.isEvent,
     }
   }
 
@@ -176,7 +173,7 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
   */
   private sliceEventRanges(
     eventRanges: EventRenderRange[],
-    extraArgs: ExtraArgs
+    extraArgs: ExtraArgs,
   ): SegType[] {
     let segs: SegType[] = []
 
@@ -192,7 +189,7 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
   */
   private sliceEventRange(
     eventRange: EventRenderRange,
-    extraArgs: ExtraArgs
+    extraArgs: ExtraArgs,
   ): SegType[] {
     let dateRange = eventRange.range
 
@@ -200,7 +197,7 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
     if (this.forceDayIfListItem && eventRange.ui.display === 'list-item') {
       dateRange = {
         start: dateRange.start,
-        end: addDays(dateRange.start, 1)
+        end: addDays(dateRange.start, 1),
       }
     }
 
@@ -214,7 +211,6 @@ export abstract class Slicer<SegType extends Seg, ExtraArgs extends any[] = []> 
 
     return segs
   }
-
 }
 
 /*
@@ -231,6 +227,6 @@ function computeActiveRange(dateProfile: DateProfile, isComponentAllDay: boolean
 
   return {
     start: addMs(range.start, dateProfile.slotMinTime.milliseconds),
-    end: addMs(range.end, dateProfile.slotMaxTime.milliseconds - 864e5) // 864e5 = ms in a day
+    end: addMs(range.end, dateProfile.slotMaxTime.milliseconds - 864e5), // 864e5 = ms in a day
   }
 }

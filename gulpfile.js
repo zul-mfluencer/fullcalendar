@@ -15,25 +15,11 @@ const { minifyBundleJs, minifyBundleCss } = require('./scripts/lib/minify')
 const modify = require('gulp-modify-file')
 const { allStructs, publicPackageStructs } = require('./scripts/lib/package-index')
 const semver = require('semver')
+const { eslintAll } = require('./scripts/eslint-dir')
 
 
 
 exports.archive = require('./scripts/lib/archive')
-
-
-
-const linkPkgSubdirs = exports.linkPkgSubdirs = series(
-  // rewire the @fullcalendar/angular package.
-  // we still want yarn to install its dependencies,
-  // but we want other packages to reference it by its dist/fullcalendar folder
-  execTask('rm -f node_modules/@fullcalendar/angular'),
-  execTask('ln -s ../../packages-contrib/angular/dist/fullcalendar node_modules/@fullcalendar/angular'),
-
-  // same concept for fullcalendar-tests
-  execTask('rm -f node_modules/fullcalendar-tests'),
-  execTask('ln -s ../packages/__tests__/tsc node_modules/fullcalendar-tests')
-)
-
 
 
 /*
@@ -43,8 +29,8 @@ we externalize these for two reasons:
  - rollup-plugin-dts was choking on the namespace declarations in the tsc-generated vdom.d.ts files.
 */
 const VDOM_FILE_MAP = {
-  'packages/core-vdom/tsc/vdom.{js,d.ts}': 'packages/core',
-  'packages/common/tsc/vdom.{js,d.ts}': 'packages/common'
+  'packages/core-preact/tsc/vdom.d.ts': 'packages/core',
+  'packages/common/tsc/vdom.d.ts': 'packages/common'
 }
 
 const copyVDomMisc = exports.copyVDomMisc = parallelMap(
@@ -87,18 +73,14 @@ function removeSimpleComments() { // like a gulp plugin
 
 
 exports.build = series(
-  linkPkgSubdirs,
-  linkVDomLib,
   series(removeTscDevLinks, writeTscDevLinks), // for tsc
   localesAllSrc, // before tsc
   execTask('tsc -b --verbose'),
   localesDts,
   removeTscDevLinks,
-  execTask('webpack --config webpack.bundles.js --env.NO_SOURCE_MAPS'), // always compile from SRC
+  execTask('webpack --config webpack.bundles.js --env NO_SOURCE_MAPS'), // always compile from SRC
   execTask('rollup -c rollup.locales.js'),
-  process.env.FULLCALENDAR_FORCE_REACT
-    ? async function() {} // rollup doesn't know how to make bundles for react-mode
-    : execTask('rollup -c rollup.bundles.js'), // needs tsc, needs removeTscDevLinks
+  execTask('rollup -c rollup.bundles.js'),
   execTask('rollup -c rollup.packages.js'),
   copyVDomMisc,
   minifyBundleJs,
@@ -106,8 +88,6 @@ exports.build = series(
 )
 
 exports.watch = series(
-  linkPkgSubdirs,
-  linkVDomLib,
   series(removeTscDevLinks, writeTscDevLinks), // for tsc
   localesAllSrc, // before tsc
   execTask('tsc -b --verbose'), // initial run
@@ -122,23 +102,22 @@ exports.watch = series(
   )
 )
 
+exports.testsIndex = testsIndex
+
 exports.test = series(
   testsIndex,
   parallel(
     testsIndexWatch,
     execParallel({
-      webpack: 'webpack --config webpack.tests.js --env.PACKAGE_MODE=src --watch',
+      webpack: 'webpack --config webpack.tests.js --watch --env PACKAGES_FROM_SOURCE',
       karma: 'karma start karma.config.js'
     })
   )
 )
 
-// note: if you want FULLCALENDAR_FORCE_REACT, you need to rebuild first, because of core-vdom
-// TODO: rename FULLCALENDAR_FORCE_REACT to FORCE_TESTS_FROM_SOURCE for this case?
 exports.testCi = series(
-  linkVDomLib, // looks at FULLCALENDAR_FORCE_REACT (doesn't matter?)
   testsIndex,
-  execTask(`webpack --config webpack.tests.js --env.PACKAGE_MODE=${process.env.FULLCALENDAR_FORCE_REACT ? 'src' : 'dist'}`), // react-mode cant do dist-mode
+  execTask('webpack --config webpack.tests.js'),
   execTask('karma start karma.config.js ci')
 )
 
@@ -202,43 +181,6 @@ async function removeTscDevLinks() {
 
 
 
-// depends on FULLCALENDAR_FORCE_REACT
-
-exports.linkVDomLib = linkVDomLib
-
-async function linkVDomLib() {
-  let pkgRoot = 'packages/core-vdom'
-  let outPath = path.join(pkgRoot, 'src/vdom.ts')
-  let newTarget = process.env.FULLCALENDAR_FORCE_REACT
-    ? '../../../packages-contrib/react/src/vdom.ts' // relative to outPath
-    : 'vdom-preact.ts'
-
-  if (process.env.FULLCALENDAR_FORCE_REACT) {
-    console.log()
-    console.log('CONNECTING TO REACT')
-    console.log()
-  }
-
-  let currentTarget
-  try {
-    currentTarget = fs.readlinkSync(outPath)
-  } catch(ex) {} // if doesn't exist
-
-  if (currentTarget && currentTarget !== newTarget) {
-    exec([ 'rm', '-rf', outPath ])
-    currentTarget = null
-
-    console.log('Clearing tsbuildinfo because vdom symlink changed') // TODO: use gulp warn util?
-    exec([ 'rm', '-rf', path.join(pkgRoot, 'tsconfig.tsbuildinfo') ])
-  }
-
-  if (!currentTarget) { // i.e. no existing symlink
-    exec([ 'ln', '-s', newTarget, outPath ])
-  }
-}
-
-
-
 
 const exec2 = require('./scripts/lib/shell').sync
 
@@ -279,6 +221,11 @@ async function testsIndex() {
 
   let mainFiles = globby.sync('packages*/__tests__/src/main.{js,ts}')
   files = mainFiles.concat(files)
+
+  // need 'contrib:ci' to have already been run
+  if (process.env.FULLCALENDAR_FORCE_REACT) {
+    files = [ 'packages-contrib/react/dist/vdom.js' ].concat(files)
+  }
 
   let code =
     files.map(
@@ -336,36 +283,6 @@ const exec3 = require('./scripts/lib/shell').sync.withOptions({
   live: true,
   exitOnError: false
 })
-
-
-exports.eslint = function() {
-  let anyFailures = false
-
-  for (let struct of allStructs) {
-    if (struct.name !== '@fullcalendar/core-vdom') {
-      let cmd = [
-        'eslint', '--config', 'eslint.config.js',
-        path.join(struct.dir, 'src'),
-        '--ext', '.ts,.tsx,.js,.jsx'
-      ]
-
-      console.log('Running eslint on', struct.name, '...')
-      console.log(cmd.join(' '))
-      console.log()
-
-      let { success } = exec3(cmd)
-      if (!success) {
-        anyFailures = true
-      }
-    }
-  }
-
-  if (anyFailures) {
-    return Promise.reject(new Error('At least one linting job failed'))
-  }
-
-  return Promise.resolve()
-}
 
 
 exports.lintBuiltCss = function() {
@@ -452,8 +369,8 @@ exports.lintPackageMeta = function() {
       success = false
     }
 
-    if (meta.module) {
-      console.warn(`${struct.name} should NOT have a 'module' entry`)
+    if (!meta.module) {
+      console.warn(`${struct.name} should have a 'module' entry`)
       success = false
     }
 
@@ -483,5 +400,8 @@ exports.lintPackageMeta = function() {
 }
 
 
-exports.lint = series(exports.lintPackageMeta, exports.eslint)
+exports.lint = series(exports.lintPackageMeta, () => {
+  return eslintAll() ? Promise.resolve() : Promise.reject(new Error('One or more lint tasks failed'))
+})
+
 exports.lintBuilt = series(exports.lintBuiltCss, exports.lintBuiltDts)

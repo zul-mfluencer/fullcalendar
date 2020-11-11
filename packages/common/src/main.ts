@@ -1,4 +1,3 @@
-
 import './main.css'
 
 // exports
@@ -18,7 +17,7 @@ export { // things for plugins. everything else is exported in api-type-deps
   BASE_OPTION_DEFAULTS, BASE_OPTION_REFINERS, identity, Identity, Dictionary, refineProps,
   BaseOptionRefiners, BaseOptionsRefined, CalendarOptionRefiners, CalendarOptionsRefined,
   ViewOptionRefiners, ViewOptionsRefined, RawOptionsFromRefiners, RefinedOptionsFromRefiners,
-  CalendarListenerRefiners
+  CalendarListenerRefiners,
 } from './options'
 
 export { EventDef, EventDefHash } from './structs/event-def'
@@ -37,18 +36,18 @@ export {
   compareNumbers, enableCursor, disableCursor,
   guid,
   computeSmallestCellWidth,
-  OrderSpec
+  OrderSpec,
 } from './util/misc'
 
 export {
   computeVisibleDayRange,
   isMultiDayRange,
-  diffDates
+  diffDates,
 } from './util/date'
 
 export {
   removeExact,
-  isArraysEqual
+  isArraysEqual,
 } from './util/array'
 
 export { memoize, memoizeObjArg, memoizeArraylike, memoizeHashlike } from './util/memoize'
@@ -58,7 +57,7 @@ export {
   Rect, pointInsideRect,
   constrainPoint,
   getRectCenter, diffPoints, Point,
-  translateRect
+  translateRect,
 } from './util/geom'
 
 export { mapHash, filterHash, isPropsEqual, compareObjs, buildHashFromArray, collectFromHash, getUnequalProps } from './util/object'
@@ -70,13 +69,20 @@ export {
   applyStyle,
   applyStyleProp,
   elementMatches,
-  elementClosest
+  elementClosest,
 } from './util/dom-manip'
 export { parseClassNames } from './util/html'
 
 export { getCanVGrowWithinCell } from './util/table-styling'
 
-export { EventStore, filterEventStoreDefs, createEmptyEventStore, mergeEventStores, getRelevantEvents, eventTupleToStore } from './structs/event-store'
+export {
+  EventStore,
+  filterEventStoreDefs,
+  createEmptyEventStore,
+  mergeEventStores,
+  getRelevantEvents,
+  eventTupleToStore,
+} from './structs/event-store'
 export { EventUiHash, EventUi, combineEventUis, createEventUi } from './component/event-ui'
 export { Splitter, SplittableProps } from './component/event-splitting'
 export { getDayClassNames, getDateMeta, DateMeta, getSlotClassNames } from './component/date-rendering'
@@ -85,7 +91,7 @@ export { buildNavLinkData } from './common/nav-link'
 export {
   preventDefault,
   listenBySelector,
-  whenTransitionDone
+  whenTransitionDone,
 } from './util/dom-event'
 
 export {
@@ -93,7 +99,7 @@ export {
   computeEdges,
   computeHeightAndMargins,
   getClippingParents,
-  computeRect
+  computeRect,
 } from './util/dom-geom'
 
 export { unpromisify } from './util/promise'
@@ -115,26 +121,38 @@ export { ViewDef } from './structs/view-def'
 export { ViewSpec } from './structs/view-spec'
 export { DateSpan, DateSpanApi, DatePointApi, isDateSpansEqual } from './structs/date-span'
 
-export { DateMarker, addDays, startOfDay, addMs, addWeeks, diffWeeks, diffWholeWeeks, diffWholeDays, diffDayAndTime, diffDays, isValidDate } from './datelib/marker'
+export {
+  DateMarker,
+  addDays,
+  startOfDay,
+  addMs,
+  addWeeks,
+  diffWeeks,
+  diffWholeWeeks,
+  diffWholeDays,
+  diffDayAndTime,
+  diffDays,
+  isValidDate,
+} from './datelib/marker'
 export {
   Duration, createDuration,
   asCleanDays, multiplyDuration, addDurations,
   asRoughMinutes, asRoughSeconds, asRoughMs,
-  wholeDivideDurations, greatestDurationDenominator
+  wholeDivideDurations, greatestDurationDenominator,
 } from './datelib/duration'
 export { DateEnv, DateMarkerMeta } from './datelib/env'
 
 export {
   createFormatter,
-  FormatterInput
+  FormatterInput,
 } from './datelib/formatting'
 export {
   DateFormatter,
-  VerboseFormattingArg
+  VerboseFormattingArg,
 } from './datelib/DateFormatter'
 export {
   formatIsoTimeString,
-  formatDayString
+  formatDayString,
 } from './datelib/formatting-utils'
 export { NamedTimeZoneImpl } from './datelib/timezone'
 export { parse as parseMarker } from './datelib/parsing'
@@ -144,7 +162,13 @@ export { EventSourceDef } from './structs/event-source-def'
 export { EventSource, EventSourceHash } from './structs/event-source'
 export { EventSourceRefiners, EventSourceRefined } from './structs/event-source-parse'
 
-export { Interaction, InteractionSettings, interactionSettingsToStore, interactionSettingsStore, InteractionSettingsStore } from './interactions/interaction'
+export {
+  Interaction,
+  InteractionSettings,
+  interactionSettingsToStore,
+  interactionSettingsStore,
+  InteractionSettingsStore,
+} from './interactions/interaction'
 export { PointerDragEvent } from './interactions/pointer'
 export { Hit } from './interactions/hit'
 export { dateSelectionJoinTransformer } from './interactions/date-selecting'
@@ -168,7 +192,8 @@ export { CalendarRoot } from './CalendarRoot'
 
 export { DayHeader } from './common/DayHeader'
 export { computeFallbackHeaderFormat } from './common/table-utils'
-export { TableDateCell, TableDowCell } from './common/TableDateCell'
+export { TableDateCell } from './common/TableDateCell'
+export { TableDowCell } from './common/TableDowCell'
 
 export { DaySeriesModel } from './common/DaySeriesModel'
 
@@ -178,7 +203,7 @@ export {
   computeSegDraggable, computeSegStartResizable, computeSegEndResizable,
   getEventClassNames, buildSegTimeText,
   buildSegCompareObj, sortEventSegs,
-  getSegMeta, EventContentArg, buildEventRangeKey
+  getSegMeta, EventContentArg, buildEventRangeKey,
 } from './component/event-rendering'
 
 export { DayTableModel, DayTableSeg, DayTableCell } from './common/DayTableModel'
@@ -193,9 +218,15 @@ export { requestJson } from './util/requestJson'
 
 export * from './vdom'
 export { BaseComponent, setRef } from './vdom-util'
-export { DelayedRunner } from './util/runner'
+export { DelayedRunner } from './util/DelayedRunner'
 
-export { ScrollGridProps, ScrollGridSectionConfig, ColGroupConfig, ScrollGridImpl, ScrollGridChunkConfig } from './scrollgrid/ScrollGridImpl'
+export {
+  ScrollGridProps,
+  ScrollGridSectionConfig,
+  ColGroupConfig,
+  ScrollGridImpl,
+  ScrollGridChunkConfig,
+} from './scrollgrid/ScrollGridImpl'
 export { SimpleScrollGrid, SimpleScrollGridSection } from './scrollgrid/SimpleScrollGrid'
 export {
   CssDimValue, ScrollerLike, SectionConfig, ColProps, ChunkConfig, hasShrinkWidth, renderMicroColGroup,
@@ -206,7 +237,7 @@ export {
   isColPropsEqual,
   renderScrollShim,
   getStickyFooterScrollbar,
-  getStickyHeaderDates
+  getStickyHeaderDates,
 } from './scrollgrid/util'
 export { Scroller, ScrollerProps, OverflowValue } from './scrollgrid/Scroller'
 export { getScrollbarWidths } from './util/scrollbar-width'
@@ -217,13 +248,14 @@ export { NowTimer } from './NowTimer'
 export { ScrollResponder, ScrollRequest } from './ScrollResponder'
 export { globalPlugins } from './global-plugins'
 export {
-  RenderHook, RenderHookProps, RenderHookPropsChildren, MountHook, MountHookProps, buildClassNameNormalizer, ContentHook, CustomContentRenderContext,
-  ClassNamesGenerator, CustomContentGenerator, DidMountHandler, WillUnmountHandler, MountArg
+  RenderHook, RenderHookProps, RenderHookPropsChildren, MountHook, MountHookProps, buildClassNameNormalizer, ContentHook,
+  CustomContentRenderContext, ClassNamesGenerator, CustomContentGenerator, DidMountHandler, WillUnmountHandler, MountArg,
 } from './common/render-hook'
 export { StandardEvent, StandardEventProps } from './common/StandardEvent'
 export { NowIndicatorRoot, NowIndicatorRootProps } from './common/NowIndicatorRoot'
 
-export { DayCellRoot, DayCellRootProps, DayCellContent, DayCellContentProps, DayCellContentArg } from './common/DayCellRoot'
+export { DayCellRoot, DayCellRootProps, DayCellContentArg } from './common/DayCellRoot'
+export { DayCellContent, DayCellContentProps } from './common/DayCellContent'
 export { EventRoot, MinimalEventProps } from './common/EventRoot'
 export { renderFill, BgEvent, BgEventProps } from './common/bg-fill'
 export { WeekNumberRoot, WeekNumberRootProps } from './common/WeekNumberRoot'

@@ -5,7 +5,6 @@ import { ComponentChildren, Component } from './vdom'
 import { DateRange } from './datelib/date-range'
 import { getNow } from './reducers/current-date'
 
-
 export interface NowTimerProps {
   unit: string // TODO: add type of unit
   children: (now: DateMarker, todayRange: DateRange) => ComponentChildren
@@ -16,16 +15,12 @@ interface NowTimerState {
   todayRange: DateRange
 }
 
-
 export class NowTimer extends Component<NowTimerProps, NowTimerState> {
-
-  static contextType = ViewContextType
+  static contextType: any = ViewContextType
   context: ViewContext // do this for all components that use the context!!!
-
   initialNowDate: DateMarker
   initialNowQueriedMs: number
   timeoutId: any
-
 
   constructor(props: NowTimerProps, context: ViewContext) {
     super(props, context)
@@ -36,17 +31,14 @@ export class NowTimer extends Component<NowTimerProps, NowTimerState> {
     this.state = this.computeTiming().currentState
   }
 
-
   render() {
     let { props, state } = this
     return props.children(state.nowDate, state.todayRange)
   }
 
-
   componentDidMount() {
     this.setTimeout()
   }
-
 
   componentDidUpdate(prevProps: NowTimerProps) {
     if (prevProps.unit !== this.props.unit) {
@@ -55,11 +47,9 @@ export class NowTimer extends Component<NowTimerProps, NowTimerState> {
     }
   }
 
-
   componentWillUnmount() {
     this.clearTimeout()
   }
-
 
   private computeTiming() {
     let { props, context } = this
@@ -71,10 +61,9 @@ export class NowTimer extends Component<NowTimerProps, NowTimerState> {
     return {
       currentState: { nowDate: currentUnitStart, todayRange: buildDayRange(currentUnitStart) } as NowTimerState,
       nextState: { nowDate: nextUnitStart, todayRange: buildDayRange(nextUnitStart) } as NowTimerState,
-      waitMs
+      waitMs,
     }
   }
-
 
   private setTimeout() {
     let { nextState, waitMs } = this.computeTiming()
@@ -86,15 +75,12 @@ export class NowTimer extends Component<NowTimerProps, NowTimerState> {
     }, waitMs)
   }
 
-
   private clearTimeout() {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId)
     }
   }
-
 }
-
 
 function buildDayRange(date: DateMarker): DateRange { // TODO: make this a general util
   let start = startOfDay(date)

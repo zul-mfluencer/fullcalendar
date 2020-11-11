@@ -3,7 +3,7 @@ import { ViewApi } from './ViewApi'
 import { Theme } from './theme/Theme'
 import { DateEnv } from './datelib/env'
 import { PluginHooks } from './plugin-system-struct'
-import { createContext } from './vdom'
+import { createContext, Context } from './vdom'
 import { ScrollResponder, ScrollRequestHandler } from './ScrollResponder'
 import { DateProfileGenerator } from './DateProfileGenerator'
 import { ViewSpec } from './structs/view-spec'
@@ -16,7 +16,7 @@ import { CalendarContext } from './CalendarContext'
 import { createDuration } from './datelib/duration'
 import { ViewOptionsRefined, CalendarListeners } from './options'
 
-export const ViewContextType = createContext<ViewContext>({} as any) // for Components
+export const ViewContextType: Context<any> = createContext<ViewContext>({} as any) // for Components
 export type ResizeHandler = (force: boolean) => void
 
 /*
@@ -50,7 +50,7 @@ export function buildViewContext(
   emitter: Emitter<CalendarListeners>,
   calendarApi: CalendarApi,
   registerInteractiveComponent: (component: DateComponent<any>, settingsInput: InteractionSettingsInput) => void,
-  unregisterInteractiveComponent: (component: DateComponent<any>) => void
+  unregisterInteractiveComponent: (component: DateComponent<any>) => void,
 ): ViewContext {
   return {
     dateEnv,
@@ -75,10 +75,10 @@ export function buildViewContext(
       return new ScrollResponder(
         execFunc,
         emitter,
-        createDuration(viewOptions.scrollTime)
+        createDuration(viewOptions.scrollTime),
       )
     },
     registerInteractiveComponent,
-    unregisterInteractiveComponent
+    unregisterInteractiveComponent,
   }
 }

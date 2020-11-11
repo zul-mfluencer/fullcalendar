@@ -5,19 +5,16 @@ import {
   DaySeriesModel,
   DayTableModel,
   memoize,
-  ChunkContentCallbackArgs
+  ChunkContentCallbackArgs,
 } from '@fullcalendar/common'
 import { DayTable } from '@fullcalendar/daygrid'
 import { TimeColsView } from './TimeColsView'
 import { DayTimeCols } from './DayTimeCols'
-import { buildSlatMetas } from './TimeColsSlats'
-
+import { buildSlatMetas } from './time-slat-meta'
 
 export class DayTimeColsView extends TimeColsView {
-
   private buildTimeColsModel = memoize(buildTimeColsModel)
   private buildSlatMetas = memoize(buildSlatMetas)
-
 
   render() {
     let { options, dateEnv, dateProfileGenerator } = this.context
@@ -25,22 +22,29 @@ export class DayTimeColsView extends TimeColsView {
     let { dateProfile } = props
     let dayTableModel = this.buildTimeColsModel(dateProfile, dateProfileGenerator)
     let splitProps = this.allDaySplitter.splitProps(props)
-    let slatMetas = this.buildSlatMetas(dateProfile.slotMinTime, dateProfile.slotMaxTime, options.slotLabelInterval, options.slotDuration, dateEnv)
+    let slatMetas = this.buildSlatMetas(
+      dateProfile.slotMinTime,
+      dateProfile.slotMaxTime,
+      options.slotLabelInterval,
+      options.slotDuration,
+      dateEnv,
+    )
     let { dayMinWidth } = options
     let hasAttachedAxis = !dayMinWidth
     let hasDetachedAxis = dayMinWidth
 
-    let headerContent = options.dayHeaders &&
+    let headerContent = options.dayHeaders && (
       <DayHeader
         dates={dayTableModel.headerDates}
         dateProfile={dateProfile}
-        datesRepDistinctDays={true}
+        datesRepDistinctDays
         renderIntro={hasAttachedAxis ? this.renderHeadAxis : null}
       />
+    )
 
     let allDayContent = (options.allDaySlot !== false) && ((contentArg: ChunkContentCallbackArgs) => (
       <DayTable
-        {...splitProps['allDay']}
+        {...splitProps.allDay}
         dateProfile={dateProfile}
         dayTableModel={dayTableModel}
         nextDayThreshold={options.nextDayThreshold}
@@ -59,7 +63,7 @@ export class DayTimeColsView extends TimeColsView {
 
     let timeGridContent = (contentArg: ChunkContentCallbackArgs) => (
       <DayTimeCols
-        {...splitProps['timed']}
+        {...splitProps.timed}
         dayTableModel={dayTableModel}
         dateProfile={dateProfile}
         axis={hasAttachedAxis}
@@ -77,12 +81,22 @@ export class DayTimeColsView extends TimeColsView {
     )
 
     return hasDetachedAxis
-      ? this.renderHScrollLayout(headerContent, allDayContent, timeGridContent, dayTableModel.colCnt, dayMinWidth, slatMetas, this.state.slatCoords)
-      : this.renderSimpleLayout(headerContent, allDayContent, timeGridContent)
+      ? this.renderHScrollLayout(
+        headerContent,
+        allDayContent,
+        timeGridContent,
+        dayTableModel.colCnt,
+        dayMinWidth,
+        slatMetas,
+        this.state.slatCoords,
+      )
+      : this.renderSimpleLayout(
+        headerContent,
+        allDayContent,
+        timeGridContent,
+      )
   }
-
 }
-
 
 export function buildTimeColsModel(dateProfile: DateProfile, dateProfileGenerator: DateProfileGenerator) {
   let daySeries = new DaySeriesModel(dateProfile.renderRange, dateProfileGenerator)

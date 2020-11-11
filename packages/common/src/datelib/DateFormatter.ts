@@ -12,7 +12,12 @@ export interface VerboseFormattingArg { // TODO: kill this
   defaultSeparator: string
 }
 
-export function createVerboseFormattingArg(start: ZonedMarker, end: ZonedMarker, context: DateFormattingContext, betterDefaultSeparator?: string): VerboseFormattingArg {
+export function createVerboseFormattingArg(
+  start: ZonedMarker,
+  end: ZonedMarker,
+  context: DateFormattingContext,
+  betterDefaultSeparator?: string,
+): VerboseFormattingArg {
   let startInfo = expandZonedMarker(start, context.calendarSystem)
   let endInfo = end ? expandZonedMarker(end, context.calendarSystem) : null
 
@@ -22,7 +27,7 @@ export function createVerboseFormattingArg(start: ZonedMarker, end: ZonedMarker,
     end: endInfo,
     timeZone: context.timeZone,
     localeCodes: context.locale.codes,
-    defaultSeparator: betterDefaultSeparator || context.defaultSeparator
+    defaultSeparator: betterDefaultSeparator || context.defaultSeparator,
   }
 }
 

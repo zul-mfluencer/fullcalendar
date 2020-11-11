@@ -26,19 +26,26 @@ export interface ViewSpec {
 
 export type ViewSpecHash = { [viewType: string]: ViewSpec }
 
-
-export function buildViewSpecs(defaultInputs: ViewConfigInputHash, optionOverrides: CalendarOptions, dynamicOptionOverrides: CalendarOptions, localeDefaults): ViewSpecHash {
+export function buildViewSpecs(
+  defaultInputs: ViewConfigInputHash,
+  optionOverrides: CalendarOptions,
+  dynamicOptionOverrides: CalendarOptions,
+  localeDefaults,
+): ViewSpecHash {
   let defaultConfigs = parseViewConfigs(defaultInputs)
   let overrideConfigs = parseViewConfigs(optionOverrides.views)
   let viewDefs = compileViewDefs(defaultConfigs, overrideConfigs)
 
-  return mapHash(viewDefs, function(viewDef) {
-    return buildViewSpec(viewDef, overrideConfigs, optionOverrides, dynamicOptionOverrides, localeDefaults)
-  })
+  return mapHash(viewDefs, (viewDef) => buildViewSpec(viewDef, overrideConfigs, optionOverrides, dynamicOptionOverrides, localeDefaults))
 }
 
-
-function buildViewSpec(viewDef: ViewDef, overrideConfigs: ViewConfigHash, optionOverrides: CalendarOptions, dynamicOptionOverrides: CalendarOptions, localeDefaults): ViewSpec {
+function buildViewSpec(
+  viewDef: ViewDef,
+  overrideConfigs: ViewConfigHash,
+  optionOverrides: CalendarOptions,
+  dynamicOptionOverrides: CalendarOptions,
+  localeDefaults,
+): ViewSpec {
   let durationInput =
     viewDef.overrides.duration ||
     viewDef.defaults.duration ||
@@ -64,9 +71,9 @@ function buildViewSpec(viewDef: ViewDef, overrideConfigs: ViewConfigHash, option
     }
   }
 
-  let queryButtonText = function(optionsSubset) {
+  let queryButtonText = (optionsSubset) => {
     let buttonTextMap = optionsSubset.buttonText || {}
-    let buttonTextKey = viewDef.defaults.buttonTextKey
+    let buttonTextKey = viewDef.defaults.buttonTextKey as string
 
     if (buttonTextKey != null && buttonTextMap[buttonTextKey] != null) {
       return buttonTextMap[buttonTextKey]
@@ -79,6 +86,8 @@ function buildViewSpec(viewDef: ViewDef, overrideConfigs: ViewConfigHash, option
     if (buttonTextMap[singleUnit] != null) {
       return buttonTextMap[singleUnit]
     }
+
+    return null
   }
 
   return {
@@ -99,10 +108,9 @@ function buildViewSpec(viewDef: ViewDef, overrideConfigs: ViewConfigHash, option
       queryButtonText(localeDefaults) ||
       viewDef.defaults.buttonText ||
       queryButtonText(BASE_OPTION_DEFAULTS) ||
-      viewDef.type // fall back to given view name
+      viewDef.type, // fall back to given view name
   }
 }
-
 
 // hack to get memoization working
 

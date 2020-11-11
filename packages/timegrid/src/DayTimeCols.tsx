@@ -1,5 +1,7 @@
 import {
-  createElement, createRef, VNode,
+  createElement,
+  createRef,
+  VNode,
   DateComponent,
   DateProfile,
   EventStore,
@@ -7,21 +9,19 @@ import {
   EventInteractionState,
   DateSpan,
   memoize,
-  intersectRanges, DateRange,
+  DateRange,
   DayTableModel,
   DateEnv,
   DateMarker,
-  Slicer,
   Hit,
   NowTimer,
   CssDimValue,
-  Duration
+  Duration,
 } from '@fullcalendar/common'
-import { TimeColsSeg } from './TimeColsSeg'
 import { TimeCols } from './TimeCols'
-import { TimeSlatMeta } from './TimeColsSlats'
+import { TimeSlatMeta } from './time-slat-meta'
 import { TimeColsSlatsCoords } from './TimeColsSlatsCoords'
-
+import { DayTimeColsSlicer } from './DayTimeColsSlicer'
 
 export interface DayTimeColsProps {
   dateProfile: DateProfile
@@ -46,13 +46,10 @@ export interface DayTimeColsProps {
   onSlatCoords?: (slatCoords: TimeColsSlatsCoords) => void
 }
 
-
 export class DayTimeCols extends DateComponent<DayTimeColsProps> {
-
   private buildDayRanges = memoize(buildDayRanges)
   private slicer = new DayTimeColsSlicer()
   private timeColsRef = createRef<TimeCols>()
-
 
   render() {
     let { props, context } = this
@@ -92,7 +89,6 @@ export class DayTimeCols extends DateComponent<DayTimeColsProps> {
     )
   }
 
-
   handleRootEl = (rootEl: HTMLDivElement | null) => {
     if (rootEl) {
       this.context.registerInteractiveComponent(this, { el: rootEl })
@@ -100,7 +96,6 @@ export class DayTimeCols extends DateComponent<DayTimeColsProps> {
       this.context.unregisterInteractiveComponent(this)
     }
   }
-
 
   queryHit(positionLeft: number, positionTop: number): Hit {
     let rawHit = this.timeColsRef.current.positionToHit(positionLeft, positionTop)
@@ -114,15 +109,15 @@ export class DayTimeCols extends DateComponent<DayTimeColsProps> {
           left: rawHit.relativeRect.left,
           right: rawHit.relativeRect.right,
           top: rawHit.relativeRect.top,
-          bottom: rawHit.relativeRect.bottom
+          bottom: rawHit.relativeRect.bottom,
         },
-        layer: 0
+        layer: 0,
       }
     }
+
+    return null
   }
-
 }
-
 
 export function buildDayRanges(dayTableModel: DayTableModel, dateProfile: DateProfile, dateEnv: DateEnv): DateRange[] {
   let ranges: DateRange[] = []
@@ -130,34 +125,9 @@ export function buildDayRanges(dayTableModel: DayTableModel, dateProfile: DatePr
   for (let date of dayTableModel.headerDates) {
     ranges.push({
       start: dateEnv.add(date, dateProfile.slotMinTime),
-      end: dateEnv.add(date, dateProfile.slotMaxTime)
+      end: dateEnv.add(date, dateProfile.slotMaxTime),
     })
   }
 
   return ranges
-}
-
-
-export class DayTimeColsSlicer extends Slicer<TimeColsSeg, [DateRange[]]> {
-
-  sliceRange(range: DateRange, dayRanges: DateRange[]): TimeColsSeg[] {
-    let segs: TimeColsSeg[] = []
-
-    for (let col = 0; col < dayRanges.length; col++) {
-      let segRange = intersectRanges(range, dayRanges[col])
-
-      if (segRange) {
-        segs.push({
-          start: segRange.start,
-          end: segRange.end,
-          isStart: segRange.start.valueOf() === range.start.valueOf(),
-          isEnd: segRange.end.valueOf() === range.end.valueOf(),
-          col
-        })
-      }
-    }
-
-    return segs
-  }
-
 }

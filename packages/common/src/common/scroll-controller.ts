@@ -1,3 +1,4 @@
+/* eslint max-classes-per-file: "off" */
 
 /*
 An object for getting/setting scroll-related information for an element.
@@ -5,7 +6,6 @@ Internally, this is done very differently for window versus DOM element,
 so this object serves as a common interface.
 */
 export abstract class ScrollController {
-
   abstract getScrollTop(): number
   abstract getScrollLeft(): number
   abstract setScrollTop(top: number): void
@@ -46,11 +46,9 @@ export abstract class ScrollController {
   canScrollRight() {
     return this.getScrollLeft() < this.getMaxScrollLeft()
   }
-
 }
 
 export class ElementScrollController extends ScrollController {
-
   el: HTMLElement
 
   constructor(el: HTMLElement) {
@@ -89,11 +87,9 @@ export class ElementScrollController extends ScrollController {
   getClientWidth() {
     return this.el.clientWidth
   }
-
 }
 
 export class WindowScrollController extends ScrollController {
-
   getScrollTop() {
     return window.pageYOffset
   }
@@ -125,5 +121,4 @@ export class WindowScrollController extends ScrollController {
   getClientWidth() {
     return document.documentElement.clientWidth
   }
-
 }

@@ -3,7 +3,6 @@ import { parseClassNames } from '../util/html'
 import { CalendarContext } from '../CalendarContext'
 import { RawOptionsFromRefiners, RefinedOptionsFromRefiners, identity, Identity } from '../options'
 
-
 // TODO: better called "EventSettings" or "EventConfig"
 // TODO: move this file into structs
 // TODO: separate constraint/overlap/allow, because selection uses only that, not other props
@@ -21,7 +20,20 @@ export const EVENT_UI_REFINERS = {
   color: String,
   backgroundColor: String,
   borderColor: String,
-  textColor: String
+  textColor: String,
+}
+
+const EMPTY_EVENT_UI: EventUi = {
+  display: null,
+  startEditable: null,
+  durationEditable: null,
+  constraints: [],
+  overlap: null,
+  allows: [],
+  backgroundColor: '',
+  borderColor: '',
+  textColor: '',
+  classNames: [],
 }
 
 type BuiltInEventUiRefiners = typeof EVENT_UI_REFINERS
@@ -48,7 +60,6 @@ export interface EventUi {
 
 export type EventUiHash = { [defId: string]: EventUi }
 
-
 export function createEventUi(refined: EventUiRefined, context: CalendarContext): EventUi {
   let constraint = normalizeConstraint(refined.constraint, context)
 
@@ -56,22 +67,20 @@ export function createEventUi(refined: EventUiRefined, context: CalendarContext)
     display: refined.display || null,
     startEditable: refined.startEditable != null ? refined.startEditable : refined.editable,
     durationEditable: refined.durationEditable != null ? refined.durationEditable : refined.editable,
-    constraints: constraint != null ? [ constraint ] : [],
+    constraints: constraint != null ? [constraint] : [],
     overlap: refined.overlap != null ? refined.overlap : null,
-    allows: refined.allow != null ? [ refined.allow ] : [],
+    allows: refined.allow != null ? [refined.allow] : [],
     backgroundColor: refined.backgroundColor || refined.color || '',
     borderColor: refined.borderColor || refined.color || '',
     textColor: refined.textColor || '',
-    classNames: (refined.className || []).concat(refined.classNames || []) // join singular and plural
+    classNames: (refined.className || []).concat(refined.classNames || []), // join singular and plural
   }
 }
-
 
 // TODO: prevent against problems with <2 args!
 export function combineEventUis(uis: EventUi[]): EventUi {
   return uis.reduce(combineTwoEventUis, EMPTY_EVENT_UI)
 }
-
 
 function combineTwoEventUis(item0: EventUi, item1: EventUi): EventUi { // hash1 has higher precedence
   return {
@@ -84,20 +93,6 @@ function combineTwoEventUis(item0: EventUi, item1: EventUi): EventUi { // hash1 
     backgroundColor: item1.backgroundColor || item0.backgroundColor,
     borderColor: item1.borderColor || item0.borderColor,
     textColor: item1.textColor || item0.textColor,
-    classNames: item0.classNames.concat(item1.classNames)
+    classNames: item0.classNames.concat(item1.classNames),
   }
-}
-
-
-const EMPTY_EVENT_UI: EventUi = {
-  display: null,
-  startEditable: null,
-  durationEditable: null,
-  constraints: [],
-  overlap: null,
-  allows: [],
-  backgroundColor: '',
-  borderColor: '',
-  textColor: '',
-  classNames: []
 }

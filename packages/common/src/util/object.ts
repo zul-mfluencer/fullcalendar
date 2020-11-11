@@ -1,5 +1,4 @@
-
-const hasOwnProperty = Object.prototype.hasOwnProperty
+const { hasOwnProperty } = Object.prototype
 
 // Merges an array of objects into a single object.
 // The second argument allows for an array of property names who's object values will be merged together.
@@ -11,7 +10,7 @@ export function mergeProps(propObjs, complexPropsMap?): any {
       let complexObjs = []
 
       // collect the trailing object values, stopping when a non-object is discovered
-      for (let i = propObjs.length - 1; i >= 0; i--) {
+      for (let i = propObjs.length - 1; i >= 0; i -= 1) {
         let val = propObjs[i][name]
 
         if (typeof val === 'object' && val) { // non-null object
@@ -30,7 +29,7 @@ export function mergeProps(propObjs, complexPropsMap?): any {
   }
 
   // copy values into the destination, going from last to first
-  for (let i = propObjs.length - 1; i >= 0; i--) {
+  for (let i = propObjs.length - 1; i >= 0; i -= 1) {
     let props = propObjs[i]
 
     for (let name in props) {
@@ -42,7 +41,6 @@ export function mergeProps(propObjs, complexPropsMap?): any {
 
   return dest
 }
-
 
 export function filterHash(hash, func) {
   let filtered = {}
@@ -56,10 +54,9 @@ export function filterHash(hash, func) {
   return filtered
 }
 
-
 export function mapHash<InputItem, OutputItem>(
   hash: { [key: string]: InputItem },
-  func: (input: InputItem, key: string) => OutputItem
+  func: (input: InputItem, key: string) => OutputItem,
 ): { [key: string]: OutputItem } {
   let newHash = {}
 
@@ -69,7 +66,6 @@ export function mapHash<InputItem, OutputItem>(
 
   return newHash
 }
-
 
 export function arrayToHash(a): { [key: string]: true } { // TODO: rename to strinArrayToHash or something
   let hash = {}
@@ -81,11 +77,10 @@ export function arrayToHash(a): { [key: string]: true } { // TODO: rename to str
   return hash
 }
 
-
 export function buildHashFromArray<Item, ItemRes>(a: Item[], func: (item: Item, index: number) => [ string, ItemRes ]) {
   let hash: { [key: string]: ItemRes } = {}
 
-  for (let i = 0; i < a.length; i++) {
+  for (let i = 0; i < a.length; i += 1) {
     let tuple = func(a[i], i)
 
     hash[tuple[0]] = tuple[1]
@@ -93,7 +88,6 @@ export function buildHashFromArray<Item, ItemRes>(a: Item[], func: (item: Item, 
 
   return hash
 }
-
 
 export function hashValuesToArray(obj) { // can't use Object.values yet because of no IE support
   let a = []
@@ -105,9 +99,7 @@ export function hashValuesToArray(obj) { // can't use Object.values yet because 
   return a
 }
 
-
 export function isPropsEqual(obj0, obj1) { // TODO: merge with compareObjs
-
   if (obj0 === obj1) {
     return true
   }
@@ -131,7 +123,6 @@ export function isPropsEqual(obj0, obj1) { // TODO: merge with compareObjs
   return true
 }
 
-
 export function getUnequalProps(obj0, obj1) {
   let keys: string[] = []
 
@@ -154,8 +145,6 @@ export function getUnequalProps(obj0, obj1) {
   return keys
 }
 
-
-
 export type EqualityFunc<T> = (a: T, b: T) => boolean
 export type EqualityThing<T> = EqualityFunc<T> | true
 
@@ -164,7 +153,6 @@ export type EqualityFuncs<ObjType> = { // not really just a "func" anymore
 }
 
 export function compareObjs(oldProps, newProps, equalityFuncs: EqualityFuncs<any> = {}) {
-
   if (oldProps === newProps) {
     return true
   }
@@ -199,7 +187,6 @@ function isObjValsEqual<T>(val0: T, val1: T, comparator: EqualityThing<T>) {
   }
   return false
 }
-
 
 export function collectFromHash<Item>(
   hash: { [key: string]: Item },

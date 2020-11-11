@@ -5,63 +5,50 @@ import { getBoundingRect } from '../dom-geom'
 import { addPoints } from '../geom'
 import { CalendarWrapper } from './CalendarWrapper'
 
-
 export class TimeGridWrapper {
-
   constructor(public el: HTMLElement) {
   }
-
 
   getAllDayEls() {
     return findElements(this.el, '.fc-day[data-date]')
   }
 
-
   getMirrorEls() {
     return findElements(this.el, '.fc-event.fc-event-mirror')
   }
-
 
   getDayEls(date) { // TODO: rename. make singular name
     date = ensureDate(date)
     return findElements(this.el, '.fc-day[data-date="' + formatIsoDay(date) + '"]')
   }
 
-
   getSlotEls() {
     return findElements(this.el, '.fc-timegrid-slot-label[data-time]')
   }
-
 
   getAxisTexts() {
     return this.getSlotAxisEls().map((el) => $(el).text())
   }
 
-
   getSlotAxisEls() { // TODO: rename to label
     return findElements(this.el, '.fc-timegrid-slot-label[data-time]')
   }
-
 
   getSlotLaneEls() {
     return findElements(this.el, '.fc-timegrid-slot-lane[data-time]')
   }
 
-
   getSlotElByIndex(index) { // TODO: rename "slat"
     return $(`.fc-timegrid-slots tr:eq(${index})`, this.el).get()
   }
-
 
   getMainSlotTable() {
     return $('.fc-timegrid-slots > table')[0]
   }
 
-
   getSeparateSlotAxisTable() {
     return $('.fc-timegrid-axis-chunk > table')[0]
   }
-
 
   getSlotElByTime(timeMs) {
     let date = parseUtcDate('2016-01-01')
@@ -69,48 +56,40 @@ export class TimeGridWrapper {
 
     if (date.getUTCDate() === 1) { // ensure no time overflow/underflow
       return this.el.querySelector('.fc-timegrid-slot-label[data-time="' + formatIsoTime(date) + '"]')
-    } else {
-      return null
     }
-  }
 
+    return null
+  }
 
   getNonBusinessDayEls() {
     return findElements(this.el, '.fc-non-business')
   }
 
-
   getColEl(col) {
     return this.el.querySelectorAll('.fc-timegrid-col:not(.fc-timegrid-axis)')[col] as HTMLElement
   }
-
 
   queryBgEventsInCol(col) {
     return findElements(this.getColEl(col), '.fc-bg-event')
   }
 
-
   queryNonBusinessSegsInCol(col) {
     return findElements(this.getColEl(col), '.fc-non-business')
   }
 
-
   getHighlightEls() { // FG events
     return findElements(this.el, '.fc-highlight')
   }
-
 
   // TODO: discourage use
   getDowEls(dayAbbrev) {
     return findElements(this.el, `.fc-day-${dayAbbrev}`)
   }
 
-
   // for https://github.com/fullcalendar/fullcalendar-scheduler/issues/363
   isStructureValid() {
     return Boolean(this.el.querySelector('.fc-timegrid-slots'))
   }
-
 
   hasNowIndicator() {
     let hasArrow = Boolean(this.getNowIndicatorArrowEl())
@@ -123,37 +102,32 @@ export class TimeGridWrapper {
     }
   }
 
-
   getNowIndicatorArrowEl() {
     return this.el.querySelector('.fc-timegrid-now-indicator-arrow')
   }
-
 
   getNowIndicatorLineEl() {
     return this.el.querySelector('.fc-timegrid-now-indicator-line')
   }
 
-
   getTimeAxisInfo() {
-    return $('.fc-timegrid-slot-label[data-time]', this.el).map(function(i, td) {
-      return {
-        text: $(td).text(),
-        isMajor: !$(td).hasClass('fc-timegrid-slot-minor')
-      }
-    }).get()
+    return $('.fc-timegrid-slot-label[data-time]', this.el).map((i, td) => ({
+      text: $(td).text(),
+      isMajor: !$(td).hasClass('fc-timegrid-slot-minor'),
+    })).get()
   }
-
 
   getLastMajorAxisInfo() {
     let cells = this.getTimeAxisInfo()
 
-    for (let i = cells.length - 1; i >= 0; i--) {
+    for (let i = cells.length - 1; i >= 0; i -= 1) {
       if (cells[i].isMajor) {
         return cells[i]
       }
     }
-  }
 
+    return null
+  }
 
   dragEventToDate(eventEl: HTMLElement, dropDate, onBeforeRelease?) {
     return new Promise((resolve) => {
@@ -161,11 +135,10 @@ export class TimeGridWrapper {
         localPoint: { left: '50%', top: 5 }, // ahhh 5. overcome divider sometimes
         end: this.getPoint(dropDate),
         onBeforeRelease,
-        onRelease: () => resolve()
+        onRelease: () => resolve(),
       })
     })
   }
-
 
   resizeEvent(eventEl: HTMLElement, origEndDate, newEndDate, onBeforeRelease?) {
     return new Promise((resolve) => {
@@ -181,11 +154,10 @@ export class TimeGridWrapper {
       $(resizerEl).simulate('drag', {
         end: destPoint,
         onBeforeRelease,
-        onRelease: () => resolve()
+        onRelease: () => resolve(),
       })
     })
   }
-
 
   resizeEventTouch(eventEl: HTMLElement, origEndDate, newEndDate) {
     return new Promise((resolve) => {
@@ -205,14 +177,13 @@ export class TimeGridWrapper {
             $(resizerEl).simulate('drag', {
               isTouch: true,
               end: destPoint,
-              onRelease: () => resolve()
+              onRelease: () => resolve(),
             })
-          }
+          },
         })
       }, 0)
     })
   }
-
 
   selectDates(start, end) {
     let startPoint = this.getPoint(start)
@@ -225,11 +196,10 @@ export class TimeGridWrapper {
       $(this.getDayEls(start)).simulate('drag', {
         point: startPoint,
         end: endPoint,
-        onRelease: () => resolve()
+        onRelease: () => resolve(),
       })
     })
   }
-
 
   selectDatesTouch(start, end) {
     let dayEls = this.getDayEls(start)
@@ -246,25 +216,23 @@ export class TimeGridWrapper {
           isTouch: true,
           point: startPoint,
           end: endPoint,
-          onRelease: () => resolve()
+          onRelease: () => resolve(),
         })
       }, 0)
     })
   }
 
-
   clickDate(date) {
     return new Promise((resolve) => {
       $(this.getDayEls(date)).simulate('drag', {
         point: this.getPoint(date),
-        onRelease: () => resolve()
+        onRelease: () => resolve(),
       })
     })
   }
 
-
   getRect(start, end) {
-    var obj
+    let obj
     if (typeof start === 'object') {
       obj = start
       start = obj.start
@@ -274,10 +242,10 @@ export class TimeGridWrapper {
     start = ensureDate(start)
     end = ensureDate(end)
 
-    var startDay = startOfDay(start)
-    var endDay = startOfDay(end)
-    var startTimeMs = start.valueOf() - startDay.valueOf()
-    var endTimeMs = end.valueOf() - endDay.valueOf()
+    let startDay = startOfDay(start)
+    let endDay = startOfDay(end)
+    let startTimeMs = start.valueOf() - startDay.valueOf()
+    let endTimeMs = end.valueOf() - endDay.valueOf()
 
     if (startDay.valueOf() === endDay.valueOf()) {
       endTimeMs = end.valueOf() - endDay.valueOf()
@@ -287,50 +255,48 @@ export class TimeGridWrapper {
       endTimeMs = 1000 * 60 * 60 * 24 // whole day
     }
 
-    var dayEls = this.getDayEls(start)
-    var dayRect = getBoundingRect(dayEls)
+    let dayEls = this.getDayEls(start)
+    let dayRect = getBoundingRect(dayEls)
     return {
       left: dayRect.left,
       right: dayRect.right,
       top: this.getTimeTop(startTimeMs),
-      bottom: this.getTimeTop(endTimeMs)
+      bottom: this.getTimeTop(endTimeMs),
     }
   }
-
 
   getPoint(date, isEnd?) { // gives offset to window topleft, like getBoundingClientRect
     date = ensureDate(date)
 
-    var day = startOfDay(date)
-    var timeMs = date.valueOf() - day.valueOf()
+    let day = startOfDay(date)
+    let timeMs = date.valueOf() - day.valueOf()
 
     if (isEnd && !timeMs) {
       day = addDays(day, -1)
       timeMs = date.valueOf() - day.valueOf()
     }
 
-    var top = this.getTimeTop(timeMs)
-    var dayEls = this.getDayEls(day)
-    var dayRect
+    let top = this.getTimeTop(timeMs)
+    let dayEls = this.getDayEls(day)
+    let dayRect
 
     expect(dayEls.length).toBe(1)
     dayRect = getBoundingRect(dayEls[0])
 
     return {
       left: (dayRect.left + dayRect.right) / 2,
-      top: top
+      top,
     }
   }
-
 
   getLine(date) {
     date = ensureDate(date)
 
-    var day = startOfDay(date)
-    var timeMs = date.valueOf() - day.valueOf()
-    var top = this.getTimeTop(timeMs)
-    var dayEls = this.getDayEls(date)
-    var dayRect
+    let day = startOfDay(date)
+    let timeMs = date.valueOf() - day.valueOf()
+    let top = this.getTimeTop(timeMs)
+    let dayEls = this.getDayEls(date)
+    let dayRect
 
     expect(dayEls.length).toBe(1)
     dayRect = getBoundingRect(dayEls[0])
@@ -338,11 +304,10 @@ export class TimeGridWrapper {
     return {
       left: dayRect.left,
       right: dayRect.right,
-      top: top,
-      bottom: top
+      top,
+      bottom: top,
     }
   }
-
 
   getTimeTop(targetTimeMs) {
     if (typeof targetTimeMs !== 'number') {
@@ -350,19 +315,18 @@ export class TimeGridWrapper {
     }
 
     const topBorderWidth = 1 // TODO: kill
-    let slotEl = this.getSlotElByTime(targetTimeMs)
-    let $slotEl // used within loop, but we access last val
 
-    // exact slot match
-    if (slotEl) {
-      return $(slotEl).offset().top + topBorderWidth
+    let singleSlotEl = this.getSlotElByTime(targetTimeMs)
+    if (singleSlotEl) { // exact slot match
+      return $(singleSlotEl).offset().top + topBorderWidth
     }
 
+    let $slotEl // used within loop, but we access last val
     let slotEls = this.getSlotEls() // all slots
     let slotTimeMs = null
     let prevSlotTimeMs = null
 
-    for (let i = 0; i < slotEls.length; i++) { // traverse earlier to later
+    for (let i = 0; i < slotEls.length; i += 1) { // traverse earlier to later
       let slotEl = slotEls[i]
       $slotEl = $(slotEl)
 
@@ -374,13 +338,13 @@ export class TimeGridWrapper {
         // before first slot
         if (!prevSlotTimeMs) {
           return $slotEl.offset().top + topBorderWidth
-        } else {
-          let $prevSlotEl = $(slotEls[i - 1])
-          return $prevSlotEl.offset().top + // previous slot top
-            topBorderWidth +
-            ($prevSlotEl.outerHeight() *
-            ((targetTimeMs - prevSlotTimeMs) / (slotTimeMs - prevSlotTimeMs)))
         }
+
+        let $prevSlotEl = $(slotEls[i - 1])
+        return $prevSlotEl.offset().top + // previous slot top
+          topBorderWidth +
+          ($prevSlotEl.outerHeight() *
+          ((targetTimeMs - prevSlotTimeMs) / (slotTimeMs - prevSlotTimeMs)))
       }
     }
 
@@ -396,44 +360,43 @@ export class TimeGridWrapper {
       Math.min(1, (targetTimeMs - slotTimeMs) / slotMsDuration)) // don't go past end of last slot
   }
 
-
   computeSpanRects(start, end) {
     start = ensureDate(start)
     end = ensureDate(end)
 
-    var dayStructs = this.computeDayInfo()
-    /** @type {any} */
-    var slotStructs = this.computeSlotInfo()
+    let dayStructs = this.computeDayInfo()
+    let slotStructs = this.computeSlotInfo()
+    let dayI
+    let dayStruct
+    let slotI
+    let slotStruct
+    let slotDayStart
+    let slotStart
+    let slotEnd
+    let coverage
+    let startTop = null
+    let endTop = null
+    let rects = []
 
-    var dayI, dayStruct
-    var slotI, slotStruct
-    var slotDayStart
-    var slotStart
-    var slotEnd
-    var coverage
-    var startTop = null
-    var endTop = null
-    var rects = []
-
-    for (dayI = 0; dayI < dayStructs.length; dayI++) {
+    for (dayI = 0; dayI < dayStructs.length; dayI += 1) {
       dayStruct = dayStructs[dayI]
 
-      for (slotI = 0; slotI < slotStructs.length; slotI++) {
+      for (slotI = 0; slotI < slotStructs.length; slotI += 1) {
         slotStruct = slotStructs[slotI]
 
         slotDayStart = addDays(
           dayStruct.date,
-          slotStruct.dayOffset
+          slotStruct.dayOffset,
         )
 
         slotStart = addMs(
           slotDayStart,
-          slotStruct.startTimeMs
+          slotStruct.startTimeMs,
         )
 
         slotEnd = addMs(
           slotDayStart,
-          slotStruct.endTimeMs
+          slotStruct.endTimeMs,
         )
 
         if (startTop === null) { // looking for the start
@@ -454,7 +417,7 @@ export class TimeGridWrapper {
               top: startTop,
               bottom: endTop,
               width: dayStruct.right - dayStruct.left,
-              height: endTop - startTop
+              height: endTop - startTop,
             })
             startTop = null
           }
@@ -468,7 +431,7 @@ export class TimeGridWrapper {
           top: startTop,
           bottom: slotStruct.bottom,
           width: dayStruct.right - dayStruct.left,
-          height: slotStruct.bottom - startTop
+          height: slotStruct.bottom - startTop,
         })
         startTop = slotStructs[0].top // top of next column
       }
@@ -478,14 +441,14 @@ export class TimeGridWrapper {
   }
 
   private computeDayInfo() {
-    var dayEls = this.getAllDayEls()
+    let dayEls = this.getAllDayEls()
 
-    var days = dayEls.map(function(node) {
-      var rect = node.getBoundingClientRect()
+    let days = dayEls.map((node) => {
+      let rect = node.getBoundingClientRect()
       return $.extend({}, rect, {
         date: parseMarker(
-          node.getAttribute('data-date')
-        ).marker
+          node.getAttribute('data-date'),
+        ).marker,
       })
     })
 
@@ -493,38 +456,35 @@ export class TimeGridWrapper {
   }
 
   private computeSlotInfo() {
-    var slotEls = this.getSlotEls()
-
-    /** @type {any} */
-    var slots
-    slots = slotEls.map(function(node) {
-      var rect = node.getBoundingClientRect()
+    let slotEls = this.getSlotEls()
+    let slots = slotEls.map((node) => {
+      let rect = node.getBoundingClientRect()
       return $.extend({}, rect, {
         startTimeMs: createDuration(
-          node.getAttribute('data-time')
-        ).milliseconds
-      })
+          node.getAttribute('data-time'),
+        ).milliseconds,
+      }) as any
     })
 
-    var len = slots.length
+    let len = slots.length
     if (len < 3) {
-      console.log('need at least 3 slots')
+      console.log('need at least 3 slots') // eslint-disable-line no-console
       return []
     }
 
-    var mid = Math.floor(len / 2)
-    var i = mid - 1
-    var standardMs = slots[mid + 1].startTimeMs - slots[mid].startTimeMs
-    var ms
-    var dayOffset = 0
+    let mid = Math.floor(len / 2)
+    let i = mid - 1
+    let standardMs = slots[mid + 1].startTimeMs - slots[mid].startTimeMs
+    let ms
+    let dayOffset = 0
 
     // iterate from one-before middle to beginning
-    for (i = mid - 1; i >= 0; i--) {
+    for (i = mid - 1; i >= 0; i -= 1) {
       ms = slots[i + 1].startTimeMs - slots[i].startTimeMs
 
       // big deviation? assume moved to previous day (b/c of special slotMinTime)
       if (Math.abs(ms - standardMs) > standardMs * 2) {
-        dayOffset--
+        dayOffset -= 1
         slots[i].endTimeMs = slots[i].startTimeMs + standardMs
       } else { // otherwise, current slot's end is next slot's beginning
         slots[i].endTimeMs = slots[i + 1].startTimeMs
@@ -536,14 +496,14 @@ export class TimeGridWrapper {
     dayOffset = 0
 
     // iterate from middle to one-before last
-    for (i = mid; i < len - 1; i++) {
+    for (i = mid; i < len - 1; i += 1) {
       ms = slots[i + 1].startTimeMs - slots[i].startTimeMs
 
       slots[i].dayOffset = dayOffset
 
       // big deviation? assume moved to next day (b/c of special slotMaxTime)
       if (Math.abs(ms - standardMs) > standardMs * 2) {
-        dayOffset++ // will apply to the next slotStruct
+        dayOffset += 1 // will apply to the next slotStruct
         slots[i].endTimeMs = slots[i].startTimeMs + standardMs
       } else { // otherwise, current slot's end is next slot's beginning
         slots[i].endTimeMs = slots[i + 1].startTimeMs
@@ -557,41 +517,33 @@ export class TimeGridWrapper {
     // if last slot went over the day threshold
     if (slots[i].endTimeMs > 1000 * 60 * 60 * 24) {
       slots[i].endTimeMs -= 1000 * 60 * 60 * 24
-      slots[i].dayOffset++
+      slots[i].dayOffset += 1
     }
 
     return slots
   }
 
-
   getEventEls() { // FG events
     return findElements(this.el, '.fc-timegrid-event')
   }
-
 
   getFirstEventEl() {
     return this.el.querySelector('.fc-timegrid-event') as HTMLElement
   }
 
-
   getBgEventEls() {
     return findElements(this.el, '.fc-bg-event')
   }
 
-
   getEventTimeTexts() {
-    return this.getEventEls().map(function(eventEl) {
-      return $(eventEl.querySelector('.fc-event-time')).text()
-    })
+    return this.getEventEls().map((eventEl) => $(eventEl.querySelector('.fc-event-time')).text())
   }
-
 
   /*
   Returns a boolean.
   TODO: check isStart/isEnd.
   */
   checkEventRendering(start, end) {
-
     if (typeof start === 'string') {
       start = new Date(start)
     }
@@ -599,32 +551,31 @@ export class TimeGridWrapper {
       end = new Date(end)
     }
 
-    var expectedRects = this.computeSpanRects(start, end)
-    var eventEls = this.getEventEls() // sorted by DOM order. not good for RTL
-    var isMatch = checkEventRenderingMatch(expectedRects, eventEls)
+    let expectedRects = this.computeSpanRects(start, end)
+    let eventEls = this.getEventEls() // sorted by DOM order. not good for RTL
+    let isMatch = checkEventRenderingMatch(expectedRects, eventEls)
 
     return {
       rects: expectedRects,
       els: eventEls,
       length: eventEls.length,
-      isMatch: isMatch
+      isMatch,
     }
   }
-
 }
 
-
 function checkEventRenderingMatch(expectedRects, eventEls) {
-  var expectedLength = expectedRects.length
-  var i, expectedRect
-  var elRect
+  let expectedLength = expectedRects.length
+  let i
+  let expectedRect
+  let elRect
 
   if (eventEls.length !== expectedLength) {
-    console.log('does not match element count')
+    console.log('does not match element count') // eslint-disable-line no-console
     return false
   }
 
-  for (i = 0; i < expectedLength; i++) {
+  for (i = 0; i < expectedLength; i += 1) {
     expectedRect = expectedRects[i]
     elRect = eventEls[i].getBoundingClientRect()
 
@@ -635,7 +586,7 @@ function checkEventRenderingMatch(expectedRects, eventEls) {
       Math.abs(elRect.top - expectedRect.top) < 1 &&
       Math.abs(elRect.bottom + 1 - expectedRect.bottom) < 1 // add 1 because of bottom margin!
     )) {
-      console.log('rects do not match')
+      console.log('rects do not match') // eslint-disable-line no-console
       return false
     }
   }
@@ -643,10 +594,9 @@ function checkEventRenderingMatch(expectedRects, eventEls) {
   return true
 }
 
-
 export function queryEventElInfo(eventEl: HTMLElement) {
   return {
     timeText: $(eventEl.querySelector('.fc-event-time')).text(),
-    isShort: eventEl.classList.contains('fc-timegrid-event-condensed')
+    isShort: eventEl.classList.contains('fc-timegrid-event-condensed'),
   }
 }

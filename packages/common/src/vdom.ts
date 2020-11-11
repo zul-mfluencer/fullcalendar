@@ -1,9 +1,8 @@
-
-/// <reference types="@fullcalendar/core-vdom" />
+/// <reference types="@fullcalendar/core-preact" />
 
 if (typeof FullCalendarVDom === 'undefined') {
   throw new Error(
-    'Please import the top-level fullcalendar lib before attempting to import a plugin.'
+    'Please import the top-level fullcalendar lib before attempting to import a plugin.',
   )
 }
 
@@ -22,3 +21,4 @@ export import Fragment = FullCalendarVDom.Fragment
 export import createContext = FullCalendarVDom.createContext
 export import VUIEvent = FullCalendarVDom.VUIEvent
 export import flushToDom = FullCalendarVDom.flushToDom
+export import unmountComponentAtNode = FullCalendarVDom.unmountComponentAtNode

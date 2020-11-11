@@ -1,12 +1,10 @@
 import {
   CalendarOptions, Action, CalendarContent, render, createElement, DelayedRunner, CssDimValue, applyStyleProp,
   CalendarApi, CalendarRoot, isArraysEqual, CalendarDataManager, CalendarData,
-  CustomContentRenderContext, flushToDom
+  CustomContentRenderContext, flushToDom, unmountComponentAtNode,
  } from '@fullcalendar/common'
 
-
 export class Calendar extends CalendarApi {
-
   currentData: CalendarData
   renderRunner: DelayedRunner
   el: HTMLElement
@@ -17,21 +15,19 @@ export class Calendar extends CalendarApi {
 
   get view() { return this.currentData.viewApi } // for public API
 
-
   constructor(el: HTMLElement, optionOverrides: CalendarOptions = {}) {
     super()
 
     this.el = el
     this.renderRunner = new DelayedRunner(this.handleRenderRequest)
 
-    new CalendarDataManager({
+    new CalendarDataManager({ // eslint-disable-line no-new
       optionOverrides,
       calendarApi: this,
       onAction: this.handleAction,
-      onData: this.handleData
+      onData: this.handleData,
     })
   }
-
 
   handleAction = (action: Action) => {
     // actions we know we want to render immediately
@@ -42,15 +38,12 @@ export class Calendar extends CalendarApi {
     }
   }
 
-
   handleData = (data: CalendarData) => {
     this.currentData = data
     this.renderRunner.request(data.calendarOptions.rerenderDelay)
   }
 
-
   handleRenderRequest = () => {
-
     if (this.isRendering) {
       this.isRendered = true
       let { currentData } = this
@@ -72,12 +65,11 @@ export class Calendar extends CalendarApi {
             )
           }}
         </CalendarRoot>,
-        this.el
+        this.el,
       )
-
     } else if (this.isRendered) {
       this.isRendered = false
-      render(null, this.el)
+      unmountComponentAtNode(this.el)
       this.setClassNames([])
       this.setHeight('')
     }
@@ -85,14 +77,13 @@ export class Calendar extends CalendarApi {
     flushToDom()
   }
 
-
   render() {
     let wasRendering = this.isRendering
 
     if (!wasRendering) {
       this.isRendering = true
     } else {
-      this.customContentRenderId++
+      this.customContentRenderId += 1
     }
 
     this.renderRunner.request()
@@ -102,7 +93,6 @@ export class Calendar extends CalendarApi {
     }
   }
 
-
   destroy() {
     if (this.isRendering) {
       this.isRendering = false
@@ -110,12 +100,10 @@ export class Calendar extends CalendarApi {
     }
   }
 
-
   updateSize() {
     super.updateSize()
     flushToDom()
   }
-
 
   batchRendering(func) {
     this.renderRunner.pause('batchRendering')
@@ -123,21 +111,17 @@ export class Calendar extends CalendarApi {
     this.renderRunner.resume('batchRendering')
   }
 
-
   pauseRendering() { // available to plugins
     this.renderRunner.pause('pauseRendering')
   }
-
 
   resumeRendering() { // available to plugins
     this.renderRunner.resume('pauseRendering', true)
   }
 
-
   resetOptions(optionOverrides, append?) {
     this.currentDataManager.resetOptions(optionOverrides, append)
   }
-
 
   setClassNames(classNames: string[]) {
     if (!isArraysEqual(classNames, this.currentClassNames)) {
@@ -155,9 +139,7 @@ export class Calendar extends CalendarApi {
     }
   }
 
-
   setHeight(height: CssDimValue) {
     applyStyleProp(this.el, 'height', height)
   }
-
 }

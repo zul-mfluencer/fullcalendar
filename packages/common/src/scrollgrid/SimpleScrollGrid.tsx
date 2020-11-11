@@ -5,13 +5,12 @@ import { RefMap } from '../util/RefMap'
 import {
   ColProps, SectionConfig, renderMicroColGroup, computeShrinkWidth, getScrollGridClassNames, getSectionClassNames, getAllowYScrolling,
   renderChunkContent, getSectionHasLiquidHeight, ChunkConfig, hasShrinkWidth, CssDimValue,
-  isColPropsEqual
+  isColPropsEqual,
 } from './util'
 import { getCanVGrowWithinCell } from '../util/table-styling'
 import { memoize } from '../util/memoize'
 import { isPropsEqual } from '../util/object'
 import { getScrollbarWidths } from '../util/scrollbar-width'
-
 
 export interface SimpleScrollGridProps {
   cols: ColProps[]
@@ -32,11 +31,12 @@ interface SimpleScrollGridState {
   scrollerClientHeights: { [index: string]: number }
 }
 
-
 export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, SimpleScrollGridState> {
-
   processCols = memoize((a) => a, isColPropsEqual) // so we get same `cols` props every time
-  renderMicroColGroup = memoize(renderMicroColGroup) // yucky to memoize VNodes, but much more efficient for consumers
+
+  // yucky to memoize VNodes, but much more efficient for consumers
+  renderMicroColGroup: typeof renderMicroColGroup = memoize(renderMicroColGroup)
+
   scrollerRefs = new RefMap<Scroller>()
   scrollerElRefs = new RefMap<HTMLElement>(this._handleScrollerEl.bind(this))
 
@@ -44,11 +44,10 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
     shrinkWidth: null,
     forceYScrollbars: false,
     scrollerClientWidths: {},
-    scrollerClientHeights: {}
+    scrollerClientHeights: {},
   }
 
-
-  render() {
+  render(): VNode {
     let { props, state, context } = this
     let sectionConfigs = props.sections || []
     let cols = this.processCols(props.cols)
@@ -66,17 +65,17 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
 
     while (configI < configCnt && (currentConfig = sectionConfigs[configI]).type === 'header') {
       headSectionNodes.push(this.renderSection(currentConfig, configI, microColGroupNode))
-      configI++
+      configI += 1
     }
 
     while (configI < configCnt && (currentConfig = sectionConfigs[configI]).type === 'body') {
       bodySectionNodes.push(this.renderSection(currentConfig, configI, microColGroupNode))
-      configI++
+      configI += 1
     }
 
     while (configI < configCnt && (currentConfig = sectionConfigs[configI]).type === 'footer') {
       footSectionNodes.push(this.renderSection(currentConfig, configI, microColGroupNode))
-      configI++
+      configI += 1
     }
 
     // firefox bug: when setting height on table and there is a thead or tfoot,
@@ -89,18 +88,16 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
       'table',
       {
         className: classNames.join(' '),
-        style: { height: props.height }
+        style: { height: props.height },
       },
       Boolean(!isBuggy && headSectionNodes.length) && createElement('thead', {}, ...headSectionNodes),
       Boolean(!isBuggy && bodySectionNodes.length) && createElement('tbody', {}, ...bodySectionNodes),
       Boolean(!isBuggy && footSectionNodes.length) && createElement('tfoot', {}, ...footSectionNodes),
-      isBuggy && createElement('tbody', {}, ...headSectionNodes, ...bodySectionNodes, ...footSectionNodes)
+      isBuggy && createElement('tbody', {}, ...headSectionNodes, ...bodySectionNodes, ...footSectionNodes),
     )
   }
 
-
   renderSection(sectionConfig: SimpleScrollGridSection, sectionI: number, microColGroupNode: VNode) {
-
     if ('outerContent' in sectionConfig) {
       return (
         <Fragment key={sectionConfig.key}>
@@ -116,9 +113,7 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
     )
   }
 
-
   renderChunkTd(sectionConfig: SimpleScrollGridSection, sectionI: number, microColGroupNode: VNode, chunkConfig: ChunkConfig) {
-
     if ('outerContent' in chunkConfig) {
       return chunkConfig.outerContent
     }
@@ -133,9 +128,9 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
     // TODO: do same thing in advanced scrollgrid? prolly not b/c always has horizontal scrollbars
     let overflowY: OverflowValue =
       !props.liquid ? 'visible' :
-      forceYScrollbars ? 'scroll' :
-      !needsYScrolling ? 'hidden' :
-      'auto'
+        forceYScrollbars ? 'scroll' :
+          !needsYScrolling ? 'hidden' :
+            'auto'
 
     let content = renderChunkContent(sectionConfig, chunkConfig, {
       tableColGroupNode: microColGroupNode,
@@ -145,12 +140,12 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
       expandRows: sectionConfig.expandRows,
       syncRowHeights: false,
       rowSyncHeights: [],
-      reportRowHeightChange: () => {}
+      reportRowHeightChange: () => {},
     })
 
     return (
       <td ref={chunkConfig.elRef}>
-        <div className={'fc-scroller-harness' + (isLiquid ? ' fc-scroller-harness-liquid' : '')}>
+        <div className={`fc-scroller-harness${isLiquid ? ' fc-scroller-harness-liquid' : ''}`}>
           <Scroller
             ref={this.scrollerRefs.createRef(sectionI)}
             elRef={this.scrollerElRefs.createRef(sectionI)}
@@ -158,13 +153,14 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
             overflowX={!props.liquid ? 'visible' : 'hidden' /* natural height? */}
             maxHeight={sectionConfig.maxHeight}
             liquid={isLiquid}
-            liquidIsAbsolute={true /* because its within a harness */}
-          >{content}</Scroller>
+            liquidIsAbsolute // because its within a harness
+          >
+            {content}
+          </Scroller>
         </div>
       </td>
     )
   }
-
 
   _handleScrollerEl(scrollerEl: HTMLElement | null, key: string) {
     let sectionI = parseInt(key, 10)
@@ -173,39 +169,33 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
     setRef(chunkConfig.scrollerElRef, scrollerEl)
   }
 
-
   // TODO: can do a really simple print-view. dont need to join rows
   handleSizing = () => {
     this.setState({
       shrinkWidth: this.computeShrinkWidth(), // will create each chunk's <colgroup>. TODO: precompute hasShrinkWidth
-      ...this.computeScrollerDims()
+      ...this.computeScrollerDims(),
     })
   }
-
 
   componentDidMount() {
     this.handleSizing()
     this.context.addResizeHandler(this.handleSizing)
   }
 
-
   componentDidUpdate() {
     // TODO: need better solution when state contains non-sizing things
     this.handleSizing()
   }
 
-
   componentWillUnmount() {
     this.context.removeResizeHandler(this.handleSizing)
   }
-
 
   computeShrinkWidth() {
     return hasShrinkWidth(this.props.cols)
       ? computeShrinkWidth(this.scrollerElRefs.getAll())
       : 0
   }
-
 
   computeScrollerDims() {
     let scrollbarWidth = getScrollbarWidths()
@@ -216,7 +206,7 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
     let scrollerClientWidths: { [index: string]: number } = {}
     let scrollerClientHeights: { [index: string]: number } = {}
 
-    for (let sectionI = 0; sectionI < sectionCnt; sectionI++) { // along edge
+    for (let sectionI = 0; sectionI < sectionCnt; sectionI += 1) { // along edge
       let scroller = scrollerRefs.currentMap[sectionI]
 
       if (scroller && scroller.needsYScrolling()) {
@@ -225,7 +215,7 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
       }
     }
 
-    for (let sectionI = 0; sectionI < sectionCnt; sectionI++) { // along edge
+    for (let sectionI = 0; sectionI < sectionCnt; sectionI += 1) { // along edge
       let scrollerEl = scrollerElRefs.currentMap[sectionI]
 
       if (scrollerEl) {
@@ -236,21 +226,20 @@ export class SimpleScrollGrid extends BaseComponent<SimpleScrollGridProps, Simpl
             forceYScrollbars
               ? scrollbarWidth.y // use global because scroller might not have scrollbars yet but will need them in future
               : 0
-          )
+          ),
         )
 
         scrollerClientHeights[sectionI] = Math.floor(
-          harnessEl.getBoundingClientRect().height // never has horizontal scrollbars
+          harnessEl.getBoundingClientRect().height, // never has horizontal scrollbars
         )
       }
     }
 
     return { forceYScrollbars, scrollerClientWidths, scrollerClientHeights }
   }
-
 }
 
 SimpleScrollGrid.addStateEquality({
   scrollerClientWidths: isPropsEqual,
-  scrollerClientHeights: isPropsEqual
+  scrollerClientHeights: isPropsEqual,
 })

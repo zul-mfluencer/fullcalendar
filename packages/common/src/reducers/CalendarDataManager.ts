@@ -1,3 +1,4 @@
+import { __assign } from 'tslib'
 import { buildLocale, RawLocaleInfo, organizeRawLocales, LocaleSingularArg } from '../datelib/locale'
 import { memoize, memoizeObjArg } from '../util/memoize'
 import { Action } from './Action'
@@ -30,7 +31,7 @@ import {
   ViewOptions, ViewOptionsRefined,
   BASE_OPTION_DEFAULTS, mergeRawOptions,
   BASE_OPTION_REFINERS, VIEW_OPTION_REFINERS,
-  CalendarListeners, CALENDAR_LISTENER_REFINERS, Dictionary
+  CalendarListeners, CALENDAR_LISTENER_REFINERS, Dictionary,
 } from '../options'
 import { rangeContainsMarker } from '../datelib/date-range'
 import { ViewApi } from '../ViewApi'
@@ -39,10 +40,8 @@ import { globalPlugins } from '../global-plugins'
 import { createEmptyEventStore } from '../structs/event-store'
 import { CalendarContext } from '../CalendarContext'
 import { CalendarDataManagerState, CalendarOptionsData, CalendarCurrentViewData, CalendarData } from './data-types'
-import { __assign } from 'tslib'
-import { TaskRunner } from '../util/runner'
+import { TaskRunner } from '../util/TaskRunner'
 import { buildTitle } from './title-formatting'
-
 
 export interface CalendarDataManagerProps {
   optionOverrides: CalendarOptions
@@ -57,13 +56,10 @@ export type ReducerFunc = ( // TODO: rename to CalendarDataInjector. move view-p
   context: CalendarContext & CalendarDataManagerState // more than just context
 ) => Dictionary
 
-
 // in future refactor, do the redux-style function(state=initial) for initial-state
 // also, whatever is happening in constructor, have it happen in action queue too
 
-
 export class CalendarDataManager {
-
   private computeOptionsData = memoize(this._computeOptionsData)
   private computeCurrentViewData = memoize(this._computeCurrentViewData)
   private organizeRawLocales = memoize(organizeRawLocales)
@@ -93,7 +89,6 @@ export class CalendarDataManager {
   private currentViewOptionsRefined: ViewOptionsRefined = ({} as any)
   public currentCalendarOptionsRefiners: any = {}
 
-
   constructor(props: CalendarDataManagerProps) {
     this.props = props
     this.actionRunner.pause()
@@ -102,7 +97,7 @@ export class CalendarDataManager {
     let optionsData = this.computeOptionsData(
       props.optionOverrides,
       dynamicOptionOverrides,
-      props.calendarApi
+      props.calendarApi,
     )
 
     let currentViewType = optionsData.calendarOptions.initialView || optionsData.pluginHooks.initialView
@@ -110,7 +105,7 @@ export class CalendarDataManager {
       currentViewType,
       optionsData,
       props.optionOverrides,
-      dynamicOptionOverrides
+      dynamicOptionOverrides,
     )
 
     // wire things up
@@ -133,7 +128,7 @@ export class CalendarDataManager {
       calendarApi: props.calendarApi,
       dispatch: this.dispatch,
       emitter: this.emitter,
-      getCurrentData: this.getCurrentData
+      getCurrentData: this.getCurrentData,
     }
 
     // needs to be after setThisContext
@@ -159,7 +154,7 @@ export class CalendarDataManager {
       eventSelection: '',
       eventDrag: null,
       eventResize: null,
-      selectionConfig: this.buildViewUiProps(calendarContext).selectionConfig
+      selectionConfig: this.buildViewUiProps(calendarContext).selectionConfig,
     }
     let contextAndState = { ...calendarContext, ...initialState }
 
@@ -176,16 +171,11 @@ export class CalendarDataManager {
     this.actionRunner.resume()
   }
 
-
-  getCurrentData = () => {
-    return this.data
-  }
-
+  getCurrentData = () => this.data
 
   dispatch = (action: Action) => {
     this.actionRunner.request(action) // protects against recursive calls to _handleAction
   }
-
 
   resetOptions(optionOverrides: CalendarOptions, append?: boolean) {
     let { props } = this
@@ -195,10 +185,9 @@ export class CalendarDataManager {
       : optionOverrides
 
     this.actionRunner.request({ // hack. will cause updateData
-      type: 'NOTHING'
+      type: 'NOTHING',
     })
   }
-
 
   _handleAction(action: Action) {
     let { props, state, emitter } = this
@@ -207,7 +196,7 @@ export class CalendarDataManager {
     let optionsData = this.computeOptionsData(
       props.optionOverrides,
       dynamicOptionOverrides,
-      props.calendarApi
+      props.calendarApi,
     )
 
     let currentViewType = reduceViewType(state.currentViewType, action)
@@ -215,7 +204,7 @@ export class CalendarDataManager {
       currentViewType,
       optionsData,
       props.optionOverrides,
-      dynamicOptionOverrides
+      dynamicOptionOverrides,
     )
 
     // wire things up
@@ -231,11 +220,10 @@ export class CalendarDataManager {
       calendarApi: props.calendarApi,
       dispatch: this.dispatch,
       emitter,
-      getCurrentData: this.getCurrentData
+      getCurrentData: this.getCurrentData,
     }
 
-    let currentDate = state.currentDate
-    let dateProfile = state.dateProfile
+    let { currentDate, dateProfile } = state
 
     if (this.data && this.data.dateProfileGenerator !== currentViewData.dateProfileGenerator) { // hack
       dateProfile = currentViewData.dateProfileGenerator.build(currentDate)
@@ -279,7 +267,7 @@ export class CalendarDataManager {
       dateSelection: reduceDateSelection(state.dateSelection, action),
       eventSelection: reduceSelectedEvent(state.eventSelection, action),
       eventDrag: reduceEventDrag(state.eventDrag, action),
-      eventResize: reduceEventResize(state.eventResize, action)
+      eventResize: reduceEventResize(state.eventResize, action),
     }
     let contextAndState = { ...calendarContext, ...newState }
 
@@ -301,7 +289,6 @@ export class CalendarDataManager {
     }
   }
 
-
   updateData() {
     let { props, state } = this
     let oldData = this.data
@@ -309,14 +296,14 @@ export class CalendarDataManager {
     let optionsData = this.computeOptionsData(
       props.optionOverrides,
       state.dynamicOptionOverrides,
-      props.calendarApi
+      props.calendarApi,
     )
 
     let currentViewData = this.computeCurrentViewData(
       state.currentViewType,
       optionsData,
       props.optionOverrides,
-      state.dynamicOptionOverrides
+      state.dynamicOptionOverrides,
     )
 
     let data: CalendarData = this.data = {
@@ -327,7 +314,7 @@ export class CalendarDataManager {
       getCurrentData: this.getCurrentData,
       ...optionsData,
       ...currentViewData,
-      ...state
+      ...state,
     }
 
     let changeHandlers = optionsData.pluginHooks.optionChangeHandlers
@@ -335,7 +322,6 @@ export class CalendarDataManager {
     let newCalendarOptions = optionsData.calendarOptions
 
     if (oldCalendarOptions && oldCalendarOptions !== newCalendarOptions) {
-
       if (oldCalendarOptions.timeZone !== newCalendarOptions.timeZone) {
         // hack
         state.eventSources = data.eventSources = reduceEventSourcesNewTimeZone(data.eventSources, state.dateProfile, data)
@@ -354,12 +340,15 @@ export class CalendarDataManager {
     }
   }
 
-
-  _computeOptionsData(optionOverrides: CalendarOptions, dynamicOptionOverrides: CalendarOptions, calendarApi: CalendarApi): CalendarOptionsData {
+  _computeOptionsData(
+    optionOverrides: CalendarOptions,
+    dynamicOptionOverrides: CalendarOptions,
+    calendarApi: CalendarApi,
+  ): CalendarOptionsData {
     // TODO: blacklist options that are handled by optionChangeHandlers
 
     let {
-      refinedOptions, pluginHooks, localeDefaults, availableLocaleData, extra
+      refinedOptions, pluginHooks, localeDefaults, availableLocaleData, extra,
     } = this.processRawCalendarOptions(optionOverrides, dynamicOptionOverrides)
 
     warnUnknownOptions(extra)
@@ -372,7 +361,7 @@ export class CalendarDataManager {
       refinedOptions.weekText,
       pluginHooks,
       availableLocaleData,
-      refinedOptions.defaultRangeSeparator
+      refinedOptions.defaultRangeSeparator,
     )
 
     let viewSpecs = this.buildViewSpecs(pluginHooks.views, optionOverrides, dynamicOptionOverrides, localeDefaults)
@@ -387,17 +376,16 @@ export class CalendarDataManager {
       theme,
       toolbarConfig,
       localeDefaults,
-      availableRawLocales: availableLocaleData.map
+      availableRawLocales: availableLocaleData.map,
     }
   }
-
 
   // always called from behind a memoizer
   processRawCalendarOptions(optionOverrides: CalendarOptions, dynamicOptionOverrides: CalendarOptions) {
     let { locales, locale } = mergeRawOptions([
       BASE_OPTION_DEFAULTS,
       optionOverrides,
-      dynamicOptionOverrides
+      dynamicOptionOverrides,
     ])
     let availableLocaleData = this.organizeRawLocales(locales)
     let availableRawLocales = availableLocaleData.map
@@ -408,7 +396,7 @@ export class CalendarDataManager {
       ...CALENDAR_LISTENER_REFINERS,
       ...CALENDAR_OPTION_REFINERS,
       ...pluginHooks.listenerRefiners,
-      ...pluginHooks.optionRefiners
+      ...pluginHooks.optionRefiners,
     }
     let extra = {}
 
@@ -416,7 +404,7 @@ export class CalendarDataManager {
       BASE_OPTION_DEFAULTS,
       localeDefaults,
       optionOverrides,
-      dynamicOptionOverrides
+      dynamicOptionOverrides,
     ])
     let refined: Partial<CalendarOptionsRefined> = {}
     let currentRaw = this.currentCalendarOptionsInput
@@ -425,17 +413,18 @@ export class CalendarDataManager {
 
     for (let optionName in raw) {
       if (optionName !== 'plugins') { // because plugins is special-cased
-
         if (
           raw[optionName] === currentRaw[optionName] ||
-          (COMPLEX_OPTION_COMPARATORS[optionName] && (optionName in currentRaw) && COMPLEX_OPTION_COMPARATORS[optionName](currentRaw[optionName], raw[optionName]))
+          (
+            COMPLEX_OPTION_COMPARATORS[optionName] &&
+            (optionName in currentRaw) &&
+            COMPLEX_OPTION_COMPARATORS[optionName](currentRaw[optionName], raw[optionName])
+          )
         ) {
           refined[optionName] = currentRefined[optionName]
-
         } else if (refiners[optionName]) {
           refined[optionName] = refiners[optionName](raw[optionName])
           anyChanges = true
-
         } else {
           extra[optionName] = currentRaw[optionName]
         }
@@ -453,12 +442,16 @@ export class CalendarDataManager {
       pluginHooks,
       availableLocaleData,
       localeDefaults,
-      extra
+      extra,
     }
   }
 
-
-  _computeCurrentViewData(viewType: string, optionsData: CalendarOptionsData, optionOverrides: CalendarOptions, dynamicOptionOverrides: CalendarOptions): CalendarCurrentViewData {
+  _computeCurrentViewData(
+    viewType: string,
+    optionsData: CalendarOptionsData,
+    optionOverrides: CalendarOptions,
+    dynamicOptionOverrides: CalendarOptions,
+  ): CalendarCurrentViewData {
     let viewSpec = optionsData.viewSpecs[viewType]
 
     if (!viewSpec) {
@@ -470,16 +463,16 @@ export class CalendarDataManager {
       optionsData.pluginHooks,
       optionsData.localeDefaults,
       optionOverrides,
-      dynamicOptionOverrides
+      dynamicOptionOverrides,
     )
 
     warnUnknownOptions(extra)
 
     let dateProfileGenerator = this.buildDateProfileGenerator({
-      dateProfileGeneratorClass: viewSpec.optionDefaults.dateProfileGeneratorClass,
+      dateProfileGeneratorClass: viewSpec.optionDefaults.dateProfileGeneratorClass as any,
       duration: viewSpec.duration,
       durationUnit: viewSpec.durationUnit,
-      usesMinMaxTime: viewSpec.optionDefaults.usesMinMaxTime,
+      usesMinMaxTime: viewSpec.optionDefaults.usesMinMaxTime as any,
       dateEnv: optionsData.dateEnv,
       calendarApi: this.props.calendarApi, // should come from elsewhere?
       slotMinTime: refinedOptions.slotMinTime,
@@ -494,7 +487,7 @@ export class CalendarDataManager {
       validRangeInput: refinedOptions.validRange,
       visibleRangeInput: refinedOptions.visibleRange,
       monthMode: refinedOptions.monthMode,
-      fixedWeekCount: refinedOptions.fixedWeekCount
+      fixedWeekCount: refinedOptions.fixedWeekCount,
     })
 
     let viewApi = this.buildViewApi(viewType, this.getCurrentData, optionsData.dateEnv)
@@ -502,15 +495,20 @@ export class CalendarDataManager {
     return { viewSpec, options: refinedOptions, dateProfileGenerator, viewApi }
   }
 
-
-  processRawViewOptions(viewSpec: ViewSpec, pluginHooks: PluginHooks, localeDefaults: CalendarOptions, optionOverrides: CalendarOptions, dynamicOptionOverrides: CalendarOptions) {
+  processRawViewOptions(
+    viewSpec: ViewSpec,
+    pluginHooks: PluginHooks,
+    localeDefaults: CalendarOptions,
+    optionOverrides: CalendarOptions,
+    dynamicOptionOverrides: CalendarOptions,
+  ) {
     let raw = mergeRawOptions([
       BASE_OPTION_DEFAULTS,
       viewSpec.optionDefaults,
       localeDefaults,
       optionOverrides,
       viewSpec.optionOverrides,
-      dynamicOptionOverrides
+      dynamicOptionOverrides,
     ])
     let refiners = {
       ...BASE_OPTION_REFINERS,
@@ -518,7 +516,7 @@ export class CalendarDataManager {
       ...CALENDAR_OPTION_REFINERS,
       ...VIEW_OPTION_REFINERS,
       ...pluginHooks.listenerRefiners,
-      ...pluginHooks.optionRefiners
+      ...pluginHooks.optionRefiners,
     }
     let refined: Partial<ViewOptionsRefined> = {}
     let currentRaw = this.currentViewOptionsInput
@@ -527,20 +525,15 @@ export class CalendarDataManager {
     let extra = {}
 
     for (let optionName in raw) {
-
       if (raw[optionName] === currentRaw[optionName]) {
         refined[optionName] = currentRefined[optionName]
-
       } else {
         if (raw[optionName] === this.currentCalendarOptionsInput[optionName]) {
-
-          if (optionName in this.currentCalendarOptionsRefined) {  // might be an "extra" prop
+          if (optionName in this.currentCalendarOptionsRefined) { // might be an "extra" prop
             refined[optionName] = this.currentCalendarOptionsRefined[optionName]
           }
-
         } else if (refiners[optionName]) {
           refined[optionName] = refiners[optionName](raw[optionName])
-
         } else {
           extra[optionName] = raw[optionName]
         }
@@ -557,12 +550,10 @@ export class CalendarDataManager {
     return {
       rawOptions: this.currentViewOptionsInput,
       refinedOptions: this.currentViewOptionsRefined,
-      extra
+      extra,
     }
   }
-
 }
-
 
 function buildDateEnv(
   timeZone: string,
@@ -572,23 +563,22 @@ function buildDateEnv(
   weekText,
   pluginHooks: PluginHooks,
   availableLocaleData: RawLocaleInfo,
-  defaultSeparator: string
+  defaultSeparator: string,
 ) {
   let locale = buildLocale(explicitLocale || availableLocaleData.defaultCode, availableLocaleData.map)
 
   return new DateEnv({
     calendarSystem: 'gregory', // TODO: make this a setting
-    timeZone: timeZone,
+    timeZone,
     namedTimeZoneImpl: pluginHooks.namedTimeZonedImpl,
     locale,
     weekNumberCalculation,
     firstDay,
     weekText,
     cmdFormatter: pluginHooks.cmdFormatter,
-    defaultSeparator
+    defaultSeparator,
   })
 }
-
 
 function buildTheme(options: CalendarOptionsRefined, pluginHooks: PluginHooks) {
   let ThemeClass = pluginHooks.themeClasses[options.themeSystem] || StandardTheme
@@ -596,25 +586,19 @@ function buildTheme(options: CalendarOptionsRefined, pluginHooks: PluginHooks) {
   return new ThemeClass(options)
 }
 
-
 function buildDateProfileGenerator(props: DateProfileGeneratorProps): DateProfileGenerator {
   let DateProfileGeneratorClass = props.dateProfileGeneratorClass || DateProfileGenerator
 
   return new DateProfileGeneratorClass(props)
 }
 
-
 function buildViewApi(type: string, getCurrentData: () => CalendarData, dateEnv: DateEnv) {
   return new ViewApi(type, getCurrentData, dateEnv)
 }
 
-
 function buildEventUiBySource(eventSources: EventSourceHash): EventUiHash {
-  return mapHash(eventSources, function(eventSource) {
-    return eventSource.ui
-  })
+  return mapHash(eventSources, (eventSource) => eventSource.ui)
 }
-
 
 function buildEventUiBases(eventDefs: EventDefHash, eventUiSingleBase: EventUi, eventUiBySource: EventUiHash) {
   let eventUiBases: EventUiHash = { '': eventUiSingleBase }
@@ -630,45 +614,47 @@ function buildEventUiBases(eventDefs: EventDefHash, eventUiSingleBase: EventUi, 
   return eventUiBases
 }
 
-
 function buildViewUiProps(calendarContext: CalendarContext) {
   let { options } = calendarContext
 
   return {
-    eventUiSingleBase: createEventUi({
-      display: options.eventDisplay,
-      editable: options.editable, // without "event" at start
-      startEditable: options.eventStartEditable,
-      durationEditable: options.eventDurationEditable,
-      constraint: options.eventConstraint,
-      overlap: typeof options.eventOverlap === 'boolean' ? options.eventOverlap : undefined,
-      allow: options.eventAllow,
-      backgroundColor: options.eventBackgroundColor,
-      borderColor: options.eventBorderColor,
-      textColor: options.eventTextColor,
-      color: options.eventColor
-      // classNames: options.eventClassNames // render hook will handle this
-    }, calendarContext),
-
-    selectionConfig: createEventUi({
-      constraint: options.selectConstraint,
-      overlap: typeof options.selectOverlap === 'boolean' ? options.selectOverlap : undefined,
-      allow: options.selectAllow
-    }, calendarContext)
+    eventUiSingleBase: createEventUi(
+      {
+        display: options.eventDisplay,
+        editable: options.editable, // without "event" at start
+        startEditable: options.eventStartEditable,
+        durationEditable: options.eventDurationEditable,
+        constraint: options.eventConstraint,
+        overlap: typeof options.eventOverlap === 'boolean' ? options.eventOverlap : undefined,
+        allow: options.eventAllow,
+        backgroundColor: options.eventBackgroundColor,
+        borderColor: options.eventBorderColor,
+        textColor: options.eventTextColor,
+        color: options.eventColor,
+        // classNames: options.eventClassNames // render hook will handle this
+      },
+      calendarContext,
+    ),
+    selectionConfig: createEventUi(
+      {
+        constraint: options.selectConstraint,
+        overlap: typeof options.selectOverlap === 'boolean' ? options.selectOverlap : undefined,
+        allow: options.selectAllow,
+      },
+      calendarContext,
+    ),
   }
 }
-
 
 function parseContextBusinessHours(calendarContext: CalendarContext) {
   return parseBusinessHours(calendarContext.options.businessHours, calendarContext)
 }
 
-
 function warnUnknownOptions(options: any, viewName?: string) {
   for (let optionName in options) {
     console.warn(
       `Unknown option '${optionName}'` +
-      (viewName ? ` for view '${viewName}'` : '')
+      (viewName ? ` for view '${viewName}'` : ''),
     )
   }
 }

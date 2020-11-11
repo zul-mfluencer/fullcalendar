@@ -6,10 +6,10 @@ import { CalendarContext } from './CalendarContext'
 export const changeHandlerPlugin = createPlugin({
   optionChangeHandlers: {
     events(events, context) {
-      handleEventSources([ events ], context)
+      handleEventSources([events], context)
     },
-    eventSources: handleEventSources
-  }
+    eventSources: handleEventSources,
+  },
 })
 
 /*
@@ -22,7 +22,7 @@ function handleEventSources(inputs, context: CalendarContext) {
   for (let input of inputs) {
     let inputFound = false
 
-    for (let i = 0; i < unfoundSources.length; i++) {
+    for (let i = 0; i < unfoundSources.length; i += 1) {
       if (unfoundSources[i]._raw === input) {
         unfoundSources.splice(i, 1) // delete
         inputFound = true
@@ -38,7 +38,7 @@ function handleEventSources(inputs, context: CalendarContext) {
   for (let unfoundSource of unfoundSources) {
     context.dispatch({
       type: 'REMOVE_EVENT_SOURCE',
-      sourceId: unfoundSource.sourceId
+      sourceId: unfoundSource.sourceId,
     })
   }
 
