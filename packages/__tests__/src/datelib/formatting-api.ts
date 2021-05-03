@@ -1,3 +1,4 @@
+import { expect } from '@esm-bundle/chai'
 import { formatDate, formatRange } from '@fullcalendar/core'
 
 describe('formatDate', () => {
@@ -7,7 +8,7 @@ describe('formatDate', () => {
       day: 'numeric',
       year: 'numeric',
     })
-    expect(str).toBe('September 4, 2018')
+    expect(str).to.equal('September 4, 2018')
   })
 
   it('works with timezone offset', () => {
@@ -19,7 +20,7 @@ describe('formatDate', () => {
       timeZone: 'America/New_York', // but with no named tz implementation
       omitCommas: true, // for cross-browser
     })
-    expect(str).toBe('September 4 2018 12:00 AM GMT-5')
+    expect(str).to.equal('September 4 2018 12:00 AM GMT-5')
   })
 })
 
@@ -30,7 +31,7 @@ describe('formatRange', () => {
       day: 'numeric',
       year: 'numeric',
     })
-    expect(str).toBe('September 4 - October 4, 2018')
+    expect(str).to.equal('September 4 - October 4, 2018')
   })
 
   it('works with custom separator', () => {
@@ -40,7 +41,7 @@ describe('formatRange', () => {
       year: 'numeric',
       separator: ' ... ',
     })
-    expect(str).toBe('September 4 ... October 4, 2018')
+    expect(str).to.equal('September 4 ... October 4, 2018')
   })
 
   it('works with timezone offset', () => {
@@ -52,6 +53,6 @@ describe('formatRange', () => {
       timeZone: 'America/New_York', // but with no named tz implementation
       omitCommas: true, // for cross-browser
     })
-    expect(str).toBe('September 4 - October 4 2018 12:00 AM GMT-5')
+    expect(str).to.equal('September 4 - October 4 2018 12:00 AM GMT-5')
   })
 })
