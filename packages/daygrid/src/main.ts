@@ -1,7 +1,7 @@
 import { createPlugin } from '@fullcalendar/common'
 import { DayTableView } from './DayTableView'
 import { TableDateProfileGenerator } from './TableDateProfileGenerator'
-import './main.css'
+// import './main.css'
 
 export { DayTable } from './DayTable'
 export { DayTableSlicer } from './DayTableSlicer'
